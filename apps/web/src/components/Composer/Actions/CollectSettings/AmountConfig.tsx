@@ -1,23 +1,33 @@
-import type { AllowedToken } from '@hey/types/hey';
+import type { AllowedToken, CollectModuleType } from '@hey/types/hey';
 import type { FC } from 'react';
 
 import ToggleWithHelper from '@components/Shared/ToggleWithHelper';
 import { CurrencyDollarIcon } from '@heroicons/react/24/outline';
-import { DEFAULT_COLLECT_TOKEN, STATIC_IMAGES_URL } from '@hey/data/constants';
-import { OpenActionModuleType } from '@hey/lens';
+import {
+  DEFAULT_COLLECT_TOKEN,
+  REWARDS_ADDRESS,
+  STATIC_IMAGES_URL
+} from '@hey/data/constants';
+import { CollectOpenActionModuleType } from '@hey/lens';
 import { Input, Select } from '@hey/ui';
 import { useCollectModuleStore } from 'src/store/non-persisted/publication/useCollectModuleStore';
+import { useProfileStore } from 'src/store/persisted/useProfileStore';
 
 interface AmountConfigProps {
   allowedTokens?: AllowedToken[];
-  setCollectType: (data: any) => void;
+  setCollectType: (data: CollectModuleType) => void;
 }
 
 const AmountConfig: FC<AmountConfigProps> = ({
   allowedTokens,
   setCollectType
 }) => {
+  const { currentProfile } = useProfileStore();
   const { collectModule } = useCollectModuleStore((state) => state);
+  const recipients =
+    collectModule.recipients?.filter(
+      (recipient) => recipient.recipient !== REWARDS_ADDRESS
+    ) || [];
 
   return (
     <div>
@@ -31,11 +41,17 @@ const AmountConfig: FC<AmountConfigProps> = ({
             amount: collectModule.amount?.value
               ? null
               : { currency: DEFAULT_COLLECT_TOKEN, value: '1' },
+            recipients: on
+              ? [
+                  { recipient: REWARDS_ADDRESS, split: 10 },
+                  { recipient: currentProfile?.ownedBy.address, split: 90 }
+                ]
+              : [],
             type: on
-              ? OpenActionModuleType.MultirecipientFeeCollectOpenActionModule
-              : collectModule.recipients?.length
-                ? OpenActionModuleType.MultirecipientFeeCollectOpenActionModule
-                : OpenActionModuleType.SimpleCollectOpenActionModule
+              ? CollectOpenActionModuleType.MultirecipientFeeCollectOpenActionModule
+              : recipients?.length
+                ? CollectOpenActionModuleType.MultirecipientFeeCollectOpenActionModule
+                : CollectOpenActionModuleType.SimpleCollectOpenActionModule
           });
         }}
       />
@@ -66,7 +82,7 @@ const AmountConfig: FC<AmountConfigProps> = ({
                   setCollectType({
                     amount: {
                       currency: value,
-                      value: collectModule.amount?.value
+                      value: collectModule.amount?.value || '0'
                     }
                   });
                 }}

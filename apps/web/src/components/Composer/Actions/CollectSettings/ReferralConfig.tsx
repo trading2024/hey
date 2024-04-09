@@ -2,6 +2,7 @@ import type { FC } from 'react';
 
 import ToggleWithHelper from '@components/Shared/ToggleWithHelper';
 import { ArrowsRightLeftIcon } from '@heroicons/react/24/outline';
+import { REWARDS_ADDRESS } from '@hey/data/constants';
 import { OpenActionModuleType } from '@hey/lens';
 import { Input } from '@hey/ui';
 import { useCollectModuleStore } from 'src/store/non-persisted/publication/useCollectModuleStore';
@@ -12,6 +13,10 @@ interface ReferralConfigProps {
 
 const ReferralConfig: FC<ReferralConfigProps> = ({ setCollectType }) => {
   const { collectModule } = useCollectModuleStore((state) => state);
+  const recipients =
+    collectModule.recipients?.filter(
+      (recipient) => recipient.recipient !== REWARDS_ADDRESS
+    ) || [];
 
   return (
     <div className="mt-5">
@@ -25,7 +30,7 @@ const ReferralConfig: FC<ReferralConfigProps> = ({ setCollectType }) => {
             referralFee: collectModule.referralFee ? 0 : 25,
             type: collectModule.amount?.value
               ? OpenActionModuleType.MultirecipientFeeCollectOpenActionModule
-              : collectModule.recipients?.length
+              : recipients?.length
                 ? OpenActionModuleType.MultirecipientFeeCollectOpenActionModule
                 : OpenActionModuleType.SimpleCollectOpenActionModule
           })

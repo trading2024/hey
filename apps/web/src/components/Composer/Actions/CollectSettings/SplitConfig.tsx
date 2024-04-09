@@ -1,5 +1,3 @@
-import type { FC } from 'react';
-
 import Beta from '@components/Shared/Badges/Beta';
 import SearchProfiles from '@components/Shared/SearchProfiles';
 import ToggleWithHelper from '@components/Shared/ToggleWithHelper';
@@ -9,10 +7,11 @@ import {
   UsersIcon,
   XCircleIcon
 } from '@heroicons/react/24/outline';
-import { ADDRESS_PLACEHOLDER } from '@hey/data/constants';
+import { ADDRESS_PLACEHOLDER, REWARDS_ADDRESS } from '@hey/data/constants';
 import { OpenActionModuleType } from '@hey/lens';
 import splitNumber from '@hey/lib/splitNumber';
 import { Button, Input } from '@hey/ui';
+import { type FC, useState } from 'react';
 import { useCollectModuleStore } from 'src/store/non-persisted/publication/useCollectModuleStore';
 import { useProfileStore } from 'src/store/persisted/useProfileStore';
 import { isAddress } from 'viem';
@@ -28,8 +27,12 @@ const SplitConfig: FC<SplitConfigProps> = ({
 }) => {
   const { currentProfile } = useProfileStore();
   const { collectModule } = useCollectModuleStore((state) => state);
+  const [showSplit, setShowSplit] = useState(false);
 
-  const recipients = collectModule.recipients || [];
+  const recipients =
+    collectModule.recipients?.filter(
+      (recipient) => recipient.recipient !== REWARDS_ADDRESS
+    ) || [];
   const hasRecipients = (recipients || []).length > 0;
   const splitTotal = recipients?.reduce((acc, curr) => acc + curr.split, 0);
 
@@ -81,22 +84,25 @@ const SplitConfig: FC<SplitConfigProps> = ({
           </div>
         }
         icon={<UsersIcon className="size-5" />}
-        on={recipients.length > 0}
-        setOn={() => {
+        on={showSplit}
+        setOn={(on) => {
+          setShowSplit(on);
           setCollectType({
-            recipients:
-              recipients.length > 0
-                ? []
-                : [{ recipient: currentProfile?.ownedBy.address, split: 100 }],
+            recipients: on
+              ? [...(collectModule.recipients || [])]
+              : [
+                  { recipient: REWARDS_ADDRESS, split: 10 },
+                  { recipient: currentProfile?.ownedBy.address, split: 90 }
+                ],
             type: collectModule.amount?.value
               ? OpenActionModuleType.MultirecipientFeeCollectOpenActionModule
-              : recipients.length > 0
+              : hasRecipients
                 ? OpenActionModuleType.SimpleCollectOpenActionModule
                 : OpenActionModuleType.MultirecipientFeeCollectOpenActionModule
           });
         }}
       />
-      {hasRecipients ? (
+      {showSplit ? (
         <div className="ml-8 mt-4 space-y-3">
           <div className="space-y-2">
             {recipients.map((recipient, index) => (
