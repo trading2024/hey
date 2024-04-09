@@ -82,6 +82,7 @@ const CollectForm: FC<CollectFormProps> = ({ setShowModal }) => {
 
   return (
     <>
+      {JSON.stringify(collectModule)}
       <div className="p-5">
         <ToggleWithHelper
           description="This post can be collected"

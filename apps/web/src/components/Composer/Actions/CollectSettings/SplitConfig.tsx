@@ -88,8 +88,9 @@ const SplitConfig: FC<SplitConfigProps> = ({
               recipients.length > 0
                 ? []
                 : [{ recipient: currentProfile?.ownedBy.address, split: 100 }],
-            type:
-              recipients.length > 0
+            type: collectModule.amount?.value
+              ? OpenActionModuleType.MultirecipientFeeCollectOpenActionModule
+              : recipients.length > 0
                 ? OpenActionModuleType.SimpleCollectOpenActionModule
                 : OpenActionModuleType.MultirecipientFeeCollectOpenActionModule
           });

@@ -23,9 +23,11 @@ const ReferralConfig: FC<ReferralConfigProps> = ({ setCollectType }) => {
         setOn={() =>
           setCollectType({
             referralFee: collectModule.referralFee ? 0 : 25,
-            type: collectModule.recipients?.length
+            type: collectModule.amount?.value
               ? OpenActionModuleType.MultirecipientFeeCollectOpenActionModule
-              : OpenActionModuleType.SimpleCollectOpenActionModule
+              : collectModule.recipients?.length
+                ? OpenActionModuleType.MultirecipientFeeCollectOpenActionModule
+                : OpenActionModuleType.SimpleCollectOpenActionModule
           })
         }
       />

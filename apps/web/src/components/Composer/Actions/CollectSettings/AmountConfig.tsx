@@ -26,13 +26,13 @@ const AmountConfig: FC<AmountConfigProps> = ({
         heading="Charge for collecting"
         icon={<CurrencyDollarIcon className="size-5" />}
         on={Boolean(collectModule.amount?.value)}
-        setOn={() => {
+        setOn={(on) => {
           setCollectType({
             amount: collectModule.amount?.value
               ? null
               : { currency: DEFAULT_COLLECT_TOKEN, value: '1' },
-            type: collectModule.amount?.value
-              ? OpenActionModuleType.SimpleCollectOpenActionModule
+            type: on
+              ? OpenActionModuleType.MultirecipientFeeCollectOpenActionModule
               : collectModule.recipients?.length
                 ? OpenActionModuleType.MultirecipientFeeCollectOpenActionModule
                 : OpenActionModuleType.SimpleCollectOpenActionModule
