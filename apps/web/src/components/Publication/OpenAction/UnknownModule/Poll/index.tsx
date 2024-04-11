@@ -4,8 +4,8 @@ import type {
 } from '@hey/lens';
 import type { FC } from 'react';
 
+import Choices from '@components/Publication/Poll/Choices';
 import { useModuleMetadataQuery } from '@hey/lens';
-import stopEventPropagation from '@hey/lib/stopEventPropagation';
 import { decodeAbiParameters } from 'viem';
 
 interface PollOpenActionProps {
@@ -27,13 +27,11 @@ const PollOpenAction: FC<PollOpenActionProps> = ({ module, publication }) => {
     module.initializeCalldata
   );
 
-  console.log(decoded);
+  if (!decoded[0]) {
+    return null;
+  }
 
-  return (
-    <div className="w-fit max-w-sm space-y-5" onClick={stopEventPropagation}>
-      gm
-    </div>
-  );
+  return <Choices decodedCallData={decoded} />;
 };
 
 export default PollOpenAction;

@@ -8,7 +8,6 @@ import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 
 import Wrapper from '../../Shared/Embed/Wrapper';
-import Choices from './Choices';
 
 interface SnapshotProps {
   id: string;
@@ -49,7 +48,7 @@ const Poll: FC<SnapshotProps> = ({ id }) => {
     return null;
   }
 
-  return <Choices poll={data} refetch={refetch} />;
+  return null;
 };
 
 export default Poll;
