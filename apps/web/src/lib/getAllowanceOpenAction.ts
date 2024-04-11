@@ -18,6 +18,8 @@ const getAllowanceOpenAction = (
       return { name: 'Tip Open Action' };
     case VerifiedOpenActionModules.Swap:
       return { name: 'Swap Open Action' };
+    case VerifiedOpenActionModules.Poll:
+      return { name: 'Poll Open Action' };
 
     default:
       return { name: 'Unknown Open Action' };

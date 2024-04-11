@@ -2,15 +2,56 @@ import type { FC } from 'react';
 
 import { ClockIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { Bars3BottomLeftIcon, XCircleIcon } from '@heroicons/react/24/solid';
+import { ZERO_ADDRESS } from '@hey/data/constants';
+import { VerifiedOpenActionModules } from '@hey/data/verified-openaction-modules';
 import { Button, Card, Input, Modal, Tooltip } from '@hey/ui';
 import plur from 'plur';
 import { useState } from 'react';
+import { useOpenActionStore } from 'src/store/non-persisted/publication/useOpenActionStore';
 import { usePublicationPollStore } from 'src/store/non-persisted/publication/usePublicationPollStore';
+import { encodeAbiParameters, stringToBytes, toBytes, toHex } from 'viem';
 
 const PollEditor: FC = () => {
   const { pollConfig, resetPollConfig, setPollConfig, setShowPollEditor } =
     usePublicationPollStore();
   const [showPollLengthModal, setShowPollLengthModal] = useState(false);
+  const { setOpenAction } = useOpenActionStore();
+
+  const updatePollOpenAction = () => {
+    const options = pollConfig.options.map((option) => toBytes(option));
+
+    if (options.length < 2) {
+      return;
+    }
+
+    setOpenAction({
+      address: VerifiedOpenActionModules.Poll,
+      data: encodeAbiParameters(
+        [
+          { name: 'options', type: 'bytes32[4]' },
+          { name: 'followersOnly', type: 'bool' },
+          { name: 'endTimestamp', type: 'uint40' },
+          { name: 'signatureRequired', type: 'bool' },
+          {
+            components: [
+              { name: 'tokenAddress', type: 'address' },
+              { name: 'minThreshold', type: 'uint256' }
+            ],
+            name: 'gateParams',
+            type: 'tuple'
+          }
+        ],
+        [
+          // @ts-ignore
+          options.map((option) => toHex(stringToBytes(option, { size: 32 }))),
+          false,
+          0,
+          false,
+          { minThreshold: BigInt(0), tokenAddress: ZERO_ADDRESS }
+        ]
+      )
+    });
+  };
 
   return (
     <Card className="m-5 px-5 py-3" forceRounded>
@@ -106,13 +147,14 @@ const PollEditor: FC = () => {
                 const newOptions = [...pollConfig.options];
                 newOptions[index] = event.target.value;
                 setPollConfig({ ...pollConfig, options: newOptions });
+                updatePollOpenAction();
               }}
               placeholder={`Choice ${index + 1}`}
               value={choice}
             />
           </div>
         ))}
-        {pollConfig.options.length !== 10 ? (
+        {pollConfig.options.length !== 4 ? (
           <button
             className="mt-2 flex items-center space-x-2 text-sm"
             onClick={() => {

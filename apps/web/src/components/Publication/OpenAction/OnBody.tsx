@@ -7,6 +7,7 @@ import type { FC } from 'react';
 import { VerifiedOpenActionModules } from '@hey/data/verified-openaction-modules';
 import { isMirrorPublication } from '@hey/lib/publicationHelpers';
 
+import PollOpenAction from './UnknownModule/Poll';
 import SwapOpenAction from './UnknownModule/Swap';
 
 interface OpenActionOnBodyProps {
@@ -19,7 +20,9 @@ const OpenActionOnBody: FC<OpenActionOnBodyProps> = ({ publication }) => {
     : publication;
 
   const module = targetPublication.openActionModules.find(
-    (module) => module.contract.address === VerifiedOpenActionModules.Swap
+    (module) =>
+      module.contract.address === VerifiedOpenActionModules.Swap ||
+      module.contract.address === VerifiedOpenActionModules.Poll
   );
 
   if (!module) {
@@ -30,6 +33,12 @@ const OpenActionOnBody: FC<OpenActionOnBodyProps> = ({ publication }) => {
     <div className="mt-3">
       {module.contract.address === VerifiedOpenActionModules.Swap && (
         <SwapOpenAction
+          module={module as UnknownOpenActionModuleSettings}
+          publication={targetPublication}
+        />
+      )}
+      {module.contract.address === VerifiedOpenActionModules.Poll && (
+        <PollOpenAction
           module={module as UnknownOpenActionModuleSettings}
           publication={targetPublication}
         />

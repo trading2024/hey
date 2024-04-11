@@ -537,6 +537,7 @@ const NewPublication: FC<NewPublicationProps> = ({ publication }) => {
       })}
       onClick={() => setShowEmojiPicker(false)}
     >
+      {JSON.stringify(openAction)}
       {error ? (
         <ErrorMessage
           className="!rounded-none"
