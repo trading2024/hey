@@ -3,6 +3,7 @@ import type { FC } from 'react';
 
 import getProfile from '@hey/helpers/getProfile';
 import humanize from '@hey/helpers/humanize';
+import { H4 } from '@hey/ui';
 import Link from 'next/link';
 import plur from 'plur';
 
@@ -11,23 +12,24 @@ interface FolloweringsProps {
 }
 
 const Followerings: FC<FolloweringsProps> = ({ profile }) => {
+  const profileLink = getProfile(profile).link;
+  const { followers, following } = profile.stats;
+
   return (
     <div className="flex gap-8">
       <Link
         className="text-left outline-offset-4"
-        href={`${getProfile(profile).link}/following`}
+        href={`${profileLink}/following`}
       >
-        <div className="text-xl">{humanize(profile.stats.following)}</div>
+        <H4>{humanize(following)}</H4>
         <div className="ld-text-gray-500">Following</div>
       </Link>
       <Link
         className="text-left outline-offset-4"
-        href={`${getProfile(profile).link}/followers`}
+        href={`${profileLink}/followers`}
       >
-        <div className="text-xl">{humanize(profile.stats.followers)}</div>
-        <div className="ld-text-gray-500">
-          {plur('Follower', profile.stats.followers)}
-        </div>
+        <H4>{humanize(followers)}</H4>
+        <div className="ld-text-gray-500">{plur('Follower', followers)}</div>
       </Link>
     </div>
   );

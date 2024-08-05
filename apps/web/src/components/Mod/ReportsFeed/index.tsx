@@ -11,7 +11,6 @@ import { Virtuoso } from 'react-virtuoso';
 import ReportDetails from './ReportDetails';
 
 const ReportsFeed: FC = () => {
-  // Variables
   const request: ModReportsRequest = { limit: LimitType.Fifty };
 
   const { data, error, fetchMore, loading } = useModLatestReportsQuery({
@@ -23,13 +22,11 @@ const ReportsFeed: FC = () => {
   const hasMore = pageInfo?.next;
 
   const onEndReached = async () => {
-    if (!hasMore) {
-      return;
+    if (hasMore) {
+      await fetchMore({
+        variables: { request: { ...request, cursor: pageInfo?.next } }
+      });
     }
-
-    return await fetchMore({
-      variables: { request: { ...request, cursor: pageInfo?.next } }
-    });
   };
 
   if (loading) {
@@ -58,7 +55,12 @@ const ReportsFeed: FC = () => {
       }
       data={reports}
       endReached={onEndReached}
-      itemContent={(index, report) => {
+      itemContent={(_, report) => {
+        // TODO: Fix this when Lens team gives us the correct solution
+        if (!report.reportedPublication) {
+          return null;
+        }
+
         return (
           <Card>
             <SinglePublication

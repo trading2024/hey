@@ -1,30 +1,40 @@
 import type { Preferences } from '@hey/types/hey';
-import type { Handler } from 'express';
+import type { Request, Response } from 'express';
 
+import heyPg from '@hey/db/heyPg';
+import { getRedis, setRedis } from '@hey/db/redisClient';
 import logger from '@hey/helpers/logger';
-import heyPg from 'src/db/heyPg';
+import parseJwt from '@hey/helpers/parseJwt';
 import catchedError from 'src/helpers/catchedError';
-import validateIsOwnerOrStaff from 'src/helpers/middlewares/validateIsOwnerOrStaff';
-import { noBody, notAllowed } from 'src/helpers/responses';
+import { rateLimiter } from 'src/helpers/middlewares/rateLimiter';
+import validateLensAccount from 'src/helpers/middlewares/validateLensAccount';
+import { noBody } from 'src/helpers/responses';
 
-export const get: Handler = async (req, res) => {
-  const { id } = req.query;
+export const get = [
+  rateLimiter({ requests: 100, within: 1 }),
+  validateLensAccount,
+  async (req: Request, res: Response) => {
+    try {
+      const identityToken = req.headers['x-identity-token'] as string;
+      const payload = parseJwt(identityToken);
+      const { id } = payload;
 
-  if (!id) {
-    return noBody(res);
-  }
+      if (!id) {
+        return noBody(res);
+      }
 
-  const validateIsOwnerOrStaffStatus = await validateIsOwnerOrStaff(
-    req,
-    id as string
-  );
-  if (validateIsOwnerOrStaffStatus !== 200) {
-    return notAllowed(res, validateIsOwnerOrStaffStatus);
-  }
+      const cacheKey = `preference:${id}`;
+      const cachedData = await getRedis(cacheKey);
 
-  try {
-    const [preference, features, email, membershipNft] = await heyPg.multi(
-      `
+      if (cachedData) {
+        logger.info(`(cached) Profile preferences fetched for ${id}`);
+        return res
+          .status(200)
+          .json({ result: JSON.parse(cachedData), success: true });
+      }
+
+      const [preference, features, email, membershipNft] = await heyPg.multi(
+        `
         SELECT * FROM "Preference" WHERE id = $1;
 
         SELECT f.key
@@ -38,26 +48,28 @@ export const get: Handler = async (req, res) => {
 
         SELECT * FROM "MembershipNft" WHERE id = $1;
       `,
-      [id as string]
-    );
+        [id as string]
+      );
 
-    const response: Preferences = {
-      appIcon: preference[0]?.appIcon || 0,
-      email: email[0]?.email || null,
-      emailVerified: Boolean(email[0]?.verified),
-      features: features.map((feature: any) => feature?.key),
-      hasDismissedOrMintedMembershipNft: Boolean(
-        membershipNft[0]?.dismissedOrMinted
-      ),
-      highSignalNotificationFilter: Boolean(
-        preference[0]?.highSignalNotificationFilter
-      )
-    };
+      const response: Preferences = {
+        appIcon: preference[0]?.appIcon || 0,
+        email: email[0]?.email || null,
+        emailVerified: Boolean(email[0]?.verified),
+        features: features.map((feature: any) => feature?.key),
+        hasDismissedOrMintedMembershipNft: Boolean(
+          membershipNft[0]?.dismissedOrMinted
+        ),
+        highSignalNotificationFilter: Boolean(
+          preference[0]?.highSignalNotificationFilter
+        )
+      };
 
-    logger.info(`Profile preferences fetched for ${id}`);
+      await setRedis(cacheKey, response);
+      logger.info(`Profile preferences fetched for ${id}`);
 
-    return res.status(200).json({ result: response, success: true });
-  } catch (error) {
-    return catchedError(res, error);
+      return res.status(200).json({ result: response, success: true });
+    } catch (error) {
+      return catchedError(res, error);
+    }
   }
-};
+];

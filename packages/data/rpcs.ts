@@ -1,9 +1,7 @@
 export const POLYGON_RPCS = [
   'https://lb.nodies.app/v1/c4af832850924699b25128e185bde36e',
-  'https://polygon-pokt.nodies.app',
-  'https://rpc.ankr.com/polygon',
-  'https://1rpc.io/matic',
-  'https://polygon-bor-rpc.publicnode.com'
+  'https://polygon-bor-rpc.publicnode.com',
+  'https://rpc.ankr.com/polygon'
 ];
 
 export const POLYGON_AMOY_RPCS = [

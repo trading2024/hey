@@ -6,7 +6,7 @@ import UserProfile from '@components/Shared/UserProfile';
 import { ArrowLeftIcon, UsersIcon } from '@heroicons/react/24/outline';
 import { ProfileLinkSource } from '@hey/data/tracking';
 import { LimitType, useFollowersQuery } from '@hey/lens';
-import { Card, EmptyState, ErrorMessage } from '@hey/ui';
+import { Card, EmptyState, ErrorMessage, H5 } from '@hey/ui';
 import Link from 'next/link';
 import { Virtuoso } from 'react-virtuoso';
 import { useProfileStore } from 'src/store/persisted/useProfileStore';
@@ -19,7 +19,6 @@ interface FollowersProps {
 const Followers: FC<FollowersProps> = ({ handle, profileId }) => {
   const { currentProfile } = useProfileStore();
 
-  // Variables
   const request: FollowersRequest = {
     limit: LimitType.TwentyFive,
     of: profileId
@@ -35,13 +34,11 @@ const Followers: FC<FollowersProps> = ({ handle, profileId }) => {
   const hasMore = pageInfo?.next;
 
   const onEndReached = async () => {
-    if (!hasMore) {
-      return;
+    if (hasMore) {
+      await fetchMore({
+        variables: { request: { ...request, cursor: pageInfo?.next } }
+      });
     }
-
-    await fetchMore({
-      variables: { request: { ...request, cursor: pageInfo?.next } }
-    });
   };
 
   if (loading) {
@@ -78,7 +75,7 @@ const Followers: FC<FollowersProps> = ({ handle, profileId }) => {
         <Link href={`/u/${handle}`}>
           <ArrowLeftIcon className="size-5" />
         </Link>
-        <b className="text-lg">Followers</b>
+        <H5>Followers</H5>
       </div>
       <div className="divider" />
       <Virtuoso
@@ -86,20 +83,18 @@ const Followers: FC<FollowersProps> = ({ handle, profileId }) => {
         computeItemKey={(index, follower) => `${follower.id}-${index}`}
         data={followers}
         endReached={onEndReached}
-        itemContent={(_, follower) => {
-          return (
-            <div className="p-5">
-              <UserProfile
-                hideFollowButton={currentProfile?.id === follower.id}
-                hideUnfollowButton={currentProfile?.id === follower.id}
-                profile={follower as Profile}
-                showBio
-                showUserPreview={false}
-                source={ProfileLinkSource.Followers}
-              />
-            </div>
-          );
-        }}
+        itemContent={(_, follower) => (
+          <div className="p-5">
+            <UserProfile
+              hideFollowButton={currentProfile?.id === follower.id}
+              hideUnfollowButton={currentProfile?.id === follower.id}
+              profile={follower as Profile}
+              showBio
+              showUserPreview={false}
+              source={ProfileLinkSource.Followers}
+            />
+          </div>
+        )}
         useWindowScroll
       />
     </Card>

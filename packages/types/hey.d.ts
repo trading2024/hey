@@ -14,7 +14,7 @@ export type Feature = {
   enabled: boolean;
   id: string;
   key: string;
-  type: 'FEATURE' | 'MODE' | 'PERMISSION';
+  type: 'COHORT' | 'FEATURE' | 'MODE' | 'PERMISSION' | 'STATUS';
 };
 
 export type AllowedToken = {
@@ -36,7 +36,6 @@ export type CollectModuleType = {
   collectLimit?: null | string;
   endsAt?: null | string;
   followerOnly?: boolean;
-  recipient?: null | string;
   recipients?: RecipientDataInput[];
   referralFee?: number;
   type?:
@@ -79,25 +78,9 @@ export type Preferences = {
   highSignalNotificationFilter: boolean;
 };
 
-export type ProfileFlags = {
+export type ProfileDetails = {
   isSuspended: boolean;
-};
-
-type UniswapToken = {
-  address: string;
-  chainId: number;
-  decimals: string;
-  symbol: string;
-};
-
-export type UniswapQuote = {
-  amountOut: string;
-  maxSlippage: string;
-  route: {
-    tokenIn: UniswapToken;
-    tokenOut: UniswapToken;
-  };
-  routeString: string;
+  pinnedPublication: null | string;
 };
 
 export type Draft = {
@@ -106,12 +89,4 @@ export type Draft = {
   createdAt: Date;
   id: string;
   updatedAt: Date;
-};
-
-export type ScoreAllocation = {
-  description: string;
-  icon: string;
-  id: string;
-  name: string;
-  score: number;
 };

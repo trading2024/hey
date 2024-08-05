@@ -1,126 +1,43 @@
 import type { NextPage } from 'next';
 
-import errorToast from '@helpers/errorToast';
 import { Leafwatch } from '@helpers/leafwatch';
 import { CheckIcon } from '@heroicons/react/24/outline';
-import { HeyPro } from '@hey/abis';
-import { Errors } from '@hey/data';
 import {
   APP_NAME,
-  HEY_PRO,
-  PRO_TIER_PRICES,
+  MONTHLY_PRO_PRICE,
   STATIC_IMAGES_URL
 } from '@hey/data/constants';
 import { PAGEVIEW } from '@hey/data/tracking';
 import formatDate from '@hey/helpers/datetime/formatDate';
-import { Button } from '@hey/ui';
+import { H3, H4, H5 } from '@hey/ui';
 import cn from '@hey/ui/cn';
-import { useEffect, useState } from 'react';
-import toast from 'react-hot-toast';
-import useHandleWrongNetwork from 'src/hooks/useHandleWrongNetwork';
-import { useProfileRestriction } from 'src/store/non-persisted/useProfileRestriction';
+import { useEffect } from 'react';
 import { useProStore } from 'src/store/non-persisted/useProStore';
-import { useProfileStore } from 'src/store/persisted/useProfileStore';
-import { parseEther } from 'viem';
-import { useTransaction, useWriteContract } from 'wagmi';
 
-const tiers = [
-  {
-    description: 'Billed monthly',
-    featured: true,
-    features: [
-      'Profile Analytics',
-      'Publication Drafts',
-      'Choose your app icon',
-      'Pro Badge on your profile',
-      'Early access to new features',
-      'Priority support'
-    ],
-    id: 'monthly',
-    name: 'Monthly',
-    price: PRO_TIER_PRICES.monthly
-  },
-  {
-    description: 'Billed annually',
-    featured: false,
-    features: [
-      'All features, plus',
-      'Free 2 months of Pro',
-      'Support indie team 💖'
-    ],
-    id: 'annually',
-    name: 'Annually',
-    price: (PRO_TIER_PRICES.annually / 12).toFixed(1)
-  }
-];
+import ExtendButton from './ExtendButton';
+
+const details = {
+  description: 'Billed monthly',
+  features: [
+    'Profile Analytics',
+    'Publication Drafts',
+    'Choose your app icon',
+    'Higher video and audio upload limits',
+    'Pro Badge on your profile',
+    'Early access to new features',
+    'Priority support'
+  ],
+  id: 'monthly',
+  name: 'Monthly',
+  price: MONTHLY_PRO_PRICE
+};
 
 const Pro: NextPage = () => {
-  const { currentProfile } = useProfileStore();
-  const { isPro, proExpiresAt } = useProStore();
-
-  const [isLoading, setIsLoading] = useState(false);
-  const [transactionHash, setTransactionHash] = useState<`0x${string}` | null>(
-    null
-  );
-
-  const { isSuspended } = useProfileRestriction();
-  const handleWrongNetwork = useHandleWrongNetwork();
+  const { proExpiresAt } = useProStore();
 
   useEffect(() => {
     Leafwatch.track(PAGEVIEW, { page: 'pro' });
   }, []);
-
-  const { isFetching: transactionLoading, isSuccess } = useTransaction({
-    hash: transactionHash as `0x${string}`,
-    query: { enabled: Boolean(transactionHash) }
-  });
-
-  useEffect(() => {
-    if (isSuccess) {
-      location.reload();
-    }
-  }, [isSuccess]);
-
-  const { writeContractAsync } = useWriteContract({
-    mutation: {
-      onError: errorToast,
-      onSuccess: (hash: string) => {
-        // Leafwatch.track(AUTH.SIGNUP, { price: SIGNUP_PRICE, via: 'crypto' });
-        setTransactionHash(hash as `0x${string}`);
-      }
-    }
-  });
-
-  const upgrade = async (id: 'annually' | 'monthly') => {
-    if (!currentProfile) {
-      return toast.error(Errors.SignWallet);
-    }
-
-    if (isSuspended) {
-      return toast.error(Errors.Suspended);
-    }
-
-    try {
-      setIsLoading(true);
-      await handleWrongNetwork();
-
-      return await writeContractAsync({
-        abi: HeyPro,
-        address: HEY_PRO,
-        args: [currentProfile.id],
-        functionName: id === 'monthly' ? 'subscribeMonthly' : 'subscribeYearly',
-        value: parseEther(
-          id === 'monthly'
-            ? PRO_TIER_PRICES.monthly.toString()
-            : PRO_TIER_PRICES.annually.toString()
-        )
-      });
-    } catch (error) {
-      errorToast(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <div className="px-6 py-20">
@@ -134,75 +51,51 @@ const Pro: NextPage = () => {
         />
       </div>
       <div className="text-center font-bold">
-        <h2 className="text-brand-500 text-2xl sm:text-3xl">Upgrade to Pro</h2>
-        <p className="mt-4 text-lg sm:text-xl">
+        <H3 className="text-brand-500">Upgrade to Pro</H3>
+        <H4 className="mt-4">
           Enjoy an enhanced experience of {APP_NAME}, exclusive creator tools,
           and more.
-        </p>
+        </H4>
       </div>
-      <p className="ld-text-gray-500 mx-auto mt-4 max-w-2xl text-center text-lg leading-7">
+      <H5 className="ld-text-gray-500 mx-auto mt-4 max-w-2xl text-center font-normal leading-7">
         You can extend your Pro subscription anytime for an additional month or
-        year, whenever it suits you, without any hassle.
-      </p>
-      <div className="mx-auto mt-16 grid max-w-lg grid-cols-1 items-center space-y-6 sm:mt-20 sm:space-y-0 lg:max-w-4xl lg:grid-cols-2">
-        {tiers.map((tier, tierIdx) => (
-          <div
-            className={cn(
-              tier.featured
-                ? 'relative bg-white shadow-2xl dark:bg-black'
-                : 'bg-white/60 sm:mx-8 lg:mx-0 dark:bg-black/60',
-              tier.featured
-                ? ''
-                : tierIdx === 0
-                  ? 'rounded-t-2xl sm:rounded-b-none lg:rounded-bl-2xl lg:rounded-tr-none'
-                  : 'sm:rounded-t-none lg:rounded-bl-none lg:rounded-tr-2xl',
-              'rounded-2xl p-8 ring-1 ring-gray-900/10 sm:p-10 dark:ring-gray-100/20'
-            )}
-            key={tier.id}
-          >
-            <h3 className="font-bold" id={tier.id}>
-              {tier.name}
-            </h3>
-            <p className="mt-4 flex items-baseline space-x-3">
-              <img
-                alt="MATIC"
-                className="size-7"
-                src={`${STATIC_IMAGES_URL}/tokens/matic.svg`}
-              />
-              <span className="text-5xl font-bold tracking-tight text-gray-900 dark:text-white">
-                {tier.price}
-              </span>
-              <span className="ld-text-gray-500">/month</span>
-            </p>
-            <p className="ld-text-gray-500 mt-6">{tier.description}</p>
-            <ul className="ld-text-gray-500 mt-8 space-y-1 text-sm sm:mt-10">
-              {tier.features.map((feature) => (
-                <li className="flex items-center space-x-3" key={feature}>
-                  <CheckIcon aria-hidden="true" className="size-5" />
-                  <span>{feature}</span>
-                </li>
-              ))}
-            </ul>
-            {proExpiresAt ? (
-              <div className="mb-2 mt-6 text-sm">
-                Your Pro expires at <b>{formatDate(proExpiresAt)}</b>
-              </div>
-            ) : null}
-            <Button
-              className="mt-3 w-full"
-              disabled={isLoading || transactionLoading}
-              onClick={() => upgrade(tier.id as 'annually' | 'monthly')}
-              outline={!tier.featured}
-              size="lg"
-            >
-              {transactionLoading
-                ? 'Transaction pending...'
-                : isPro
-                  ? `Extend a ${tier.id === 'monthly' ? 'Month' : 'Year'}`
-                  : 'Upgrade to Pro'}
-            </Button>
-          </div>
-        ))}
+        given time, whenever it suits you, without any hassle.
+      </H5>
+      <div className="mx-auto mt-20 max-w-md items-center space-y-6">
+        <div
+          className={cn(
+            'relative bg-white shadow-2xl dark:bg-black',
+            'rounded-2xl p-8 ring-1 ring-gray-900/10 sm:p-10 dark:ring-gray-100/20'
+          )}
+        >
+          <h3 className="font-bold">{details.name}</h3>
+          <p className="mt-4 flex items-baseline space-x-3">
+            <img
+              alt="MATIC"
+              className="size-7"
+              src={`${STATIC_IMAGES_URL}/tokens/matic.svg`}
+            />
+            <span className="text-5xl font-bold tracking-tight text-gray-900 dark:text-white">
+              {details.price}
+            </span>
+            <span className="ld-text-gray-500">/month</span>
+          </p>
+          <p className="ld-text-gray-500 mt-6">{details.description}</p>
+          <ul className="ld-text-gray-500 mt-8 space-y-1 text-sm sm:mt-10">
+            {details.features.map((feature) => (
+              <li className="flex items-center space-x-3" key={feature}>
+                <CheckIcon aria-hidden="true" className="size-5" />
+                <span>{feature}</span>
+              </li>
+            ))}
+          </ul>
+          {proExpiresAt && (
+            <div className="mb-2 mt-6 text-sm">
+              Your Pro expires at <b>{formatDate(proExpiresAt)}</b>
+            </div>
+          )}
+          <ExtendButton />
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import type { Profile } from '@hey/lens';
 import type { FC, ReactNode } from 'react';
 
+import FullPageLoader from '@components/Shared/FullPageLoader';
 import GlobalAlerts from '@components/Shared/GlobalAlerts';
 import GlobalBanners from '@components/Shared/GlobalBanners';
 import BottomNavigation from '@components/Shared/Navbar/BottomNavigation';
@@ -14,6 +15,7 @@ import { useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { useNonceStore } from 'src/store/non-persisted/useNonceStore';
 import { usePreferencesStore } from 'src/store/non-persisted/usePreferencesStore';
+import { useProfileStatus } from 'src/store/non-persisted/useProfileStatus';
 import { hydrateAuthTokens, signOut } from 'src/store/persisted/useAuthStore';
 import { useFeatureFlagsStore } from 'src/store/persisted/useFeatureFlagsStore';
 import { useProfileStore } from 'src/store/persisted/useProfileStore';
@@ -21,7 +23,6 @@ import { isAddress } from 'viem';
 import { useDisconnect } from 'wagmi';
 
 import GlobalModals from '../Shared/GlobalModals';
-import Loading from '../Shared/Loading';
 import Navbar from '../Shared/Navbar';
 
 interface LayoutProps {
@@ -34,6 +35,7 @@ const Layout: FC<LayoutProps> = ({ children }) => {
     useProfileStore();
   const { resetPreferences } = usePreferencesStore();
   const { resetFeatureFlags } = useFeatureFlagsStore();
+  const { resetStatus } = useProfileStatus();
   const { setLensHubOnchainSigNonce } = useNonceStore();
 
   const isMounted = useIsClient();
@@ -44,6 +46,7 @@ const Layout: FC<LayoutProps> = ({ children }) => {
   const logout = (reload = false) => {
     resetPreferences();
     resetFeatureFlags();
+    resetStatus();
     signOut();
     disconnect?.();
     if (reload) {
@@ -82,7 +85,7 @@ const Layout: FC<LayoutProps> = ({ children }) => {
   const profileLoading = !currentProfile && loading;
 
   if (profileLoading || !isMounted) {
-    return <Loading />;
+    return <FullPageLoader />;
   }
 
   return (

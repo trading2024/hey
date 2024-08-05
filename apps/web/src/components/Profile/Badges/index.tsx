@@ -1,24 +1,17 @@
-import type { ProfileOnchainIdentity } from '@hey/lens';
 import type { FC } from 'react';
 
-import { HEY_API_URL } from '@hey/data/constants';
+import { HEY_API_URL, IS_MAINNET } from '@hey/data/constants';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 
-import Ens from './Ens';
 import HeyNft from './HeyNft';
 import HeyProfile from './HeyProfile';
-import ProofOfHumanity from './ProofOfHumanity';
-import Sybil from './Sybil';
-import Worldcoin from './Worldcoin';
 
 interface BadgesProps {
-  address: string;
   id: string;
-  onchainIdentity: ProfileOnchainIdentity;
 }
 
-const Badges: FC<BadgesProps> = ({ address, id, onchainIdentity }) => {
+const Badges: FC<BadgesProps> = ({ id }) => {
   // Begin: Get isHeyProfile
   const getIsHeyProfile = async (): Promise<boolean> => {
     const response = await axios.get(`${HEY_API_URL}/badges/isHeyProfile`, {
@@ -38,7 +31,7 @@ const Badges: FC<BadgesProps> = ({ address, id, onchainIdentity }) => {
   // Begin: Check has Hey NFT
   const getHasHeyNft = async (): Promise<boolean> => {
     const response = await axios.get(`${HEY_API_URL}/badges/hasHeyNft`, {
-      params: { address }
+      params: { id }
     });
     const { data } = response;
 
@@ -46,20 +39,15 @@ const Badges: FC<BadgesProps> = ({ address, id, onchainIdentity }) => {
   };
 
   const { data: hasHeyNft } = useQuery({
+    enabled: IS_MAINNET,
     queryFn: getHasHeyNft,
-    queryKey: ['getHasHeyNft', address]
+    queryKey: ['getHasHeyNft', id]
   });
   // End: Check has Hey NFT
 
-  const hasOnChainIdentity =
-    onchainIdentity?.proofOfHumanity ||
-    onchainIdentity?.sybilDotOrg?.verified ||
-    onchainIdentity?.ens?.name ||
-    onchainIdentity?.worldcoin?.isHuman ||
-    isHeyProfile ||
-    hasHeyNft;
+  const hasBadges = isHeyProfile || hasHeyNft;
 
-  if (!hasOnChainIdentity) {
+  if (!hasBadges) {
     return null;
   }
 
@@ -67,10 +55,6 @@ const Badges: FC<BadgesProps> = ({ address, id, onchainIdentity }) => {
     <>
       <div className="divider w-full" />
       <div className="flex flex-wrap gap-3">
-        <ProofOfHumanity onchainIdentity={onchainIdentity} />
-        <Ens onchainIdentity={onchainIdentity} />
-        <Sybil onchainIdentity={onchainIdentity} />
-        <Worldcoin onchainIdentity={onchainIdentity} />
         {isHeyProfile && <HeyProfile />}
         {hasHeyNft && <HeyNft />}
       </div>

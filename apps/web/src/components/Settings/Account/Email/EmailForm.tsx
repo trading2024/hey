@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 
 import errorToast from '@helpers/errorToast';
-import getAuthApiHeaders from '@helpers/getAuthApiHeaders';
+import { getAuthApiHeaders } from '@helpers/getAuthApiHeaders';
 import { Leafwatch } from '@helpers/leafwatch';
 import { HEY_API_URL } from '@hey/data/constants';
 import { Errors } from '@hey/data/errors';
@@ -11,7 +11,7 @@ import axios from 'axios';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { usePreferencesStore } from 'src/store/non-persisted/usePreferencesStore';
-import { useProfileRestriction } from 'src/store/non-persisted/useProfileRestriction';
+import { useProfileStatus } from 'src/store/non-persisted/useProfileStatus';
 import { useProfileStore } from 'src/store/persisted/useProfileStore';
 import { object, string } from 'zod';
 
@@ -22,7 +22,7 @@ const updateEmailSchema = object({
 const EmailForm: FC = () => {
   const { currentProfile } = useProfileStore();
   const { email, setEmail: setEmailState } = usePreferencesStore();
-  const { isSuspended } = useProfileRestriction();
+  const { isSuspended } = useProfileStatus();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useZodForm({ schema: updateEmailSchema });

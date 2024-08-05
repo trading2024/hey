@@ -5,6 +5,7 @@ import { ShieldCheckIcon } from '@heroicons/react/24/solid';
 import { GIT_COMMIT_SHA, IS_MAINNET, IS_PRODUCTION } from '@hey/data/constants';
 import cn from '@hey/ui/cn';
 import Link from 'next/link';
+import { useFeatureFlagsStore } from 'src/store/persisted/useFeatureFlagsStore';
 import urlcat from 'urlcat';
 
 import Performance from './Performance';
@@ -20,6 +21,12 @@ export const Badge: FC<BadgeProps> = ({ children }) => (
 );
 
 const StaffBar: FC = () => {
+  const { staffMode } = useFeatureFlagsStore();
+
+  if (!staffMode) {
+    return null;
+  }
+
   return (
     <div className="flex items-center justify-between bg-gray-200 px-3 py-1 text-sm dark:bg-gray-800">
       <div className="mr-5 flex flex-wrap items-center gap-2">
@@ -53,7 +60,11 @@ const StaffBar: FC = () => {
           </Link>
         ) : null}
       </div>
-      <Link className="flex items-center space-x-2" href="/staff">
+      <Link
+        aria-label="Staff Dashboard"
+        className="flex items-center space-x-2"
+        href="/staff"
+      >
         <ShieldCheckIcon className="size-4 text-green-600" />
         <span className="hidden sm:block">Dashboard</span>
       </Link>

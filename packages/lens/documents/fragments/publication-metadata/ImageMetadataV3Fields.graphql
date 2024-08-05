@@ -1,6 +1,6 @@
 fragment ImageMetadataV3Fields on ImageMetadataV3 {
   id
-  rawURI
+  content
   tags
   attributes {
     ...MetadataAttributeFields
@@ -11,10 +11,4 @@ fragment ImageMetadataV3Fields on ImageMetadataV3 {
   asset {
     ...PublicationMetadataMediaImageFields
   }
-  title
-  content
-  encryptedWith {
-    ...PublicationMetadataLitEncryptionFields
-  }
-  appId
 }

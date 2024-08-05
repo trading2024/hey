@@ -14,6 +14,7 @@ export const AUTH = {
 
 export const PROFILE = {
   BLOCK: 'Block profile',
+  COPY_PROFILE_ADDRESS: 'Copy profile address',
   COPY_PROFILE_LINK: 'Copy profile link',
   DISMISS_RECOMMENDED_PROFILE: 'Dismiss recommended profile',
   FOLLOW: 'Follow profile',
@@ -42,6 +43,8 @@ export const PUBLICATION = {
   },
   BOOKMARK: 'Bookmark publication',
   CLICK_CASHTAG: 'Click publication cashtag',
+  CLICK_CLUB: 'Click publication club',
+  CLICK_FRAME_BUTTON: 'Click publication frame button',
   CLICK_HASHTAG: 'Click publication hashtag',
   CLICK_MENTION: 'Click publication mention',
   CLICK_OEMBED: 'Click publication oembed',
@@ -61,12 +64,12 @@ export const PUBLICATION = {
   OPEN_ACTIONS: {
     DECENT: {
       OPEN_DECENT: 'Open decent.xyz open action modal'
-    },
-    SWAP: { SWAP: 'Swap OA: Swap' }
+    }
   },
   OPEN_GIFS: 'Open GIFs modal',
   OPEN_LIKES: 'Open likes modal',
   OPEN_NFT: 'Open NFT',
+  PIN: 'Pin publication',
   REMOVE_BOOKMARK: 'Remove bookmark publication',
   REPORT: 'Report publication',
   SHARE: 'Share publication',
@@ -79,6 +82,7 @@ export const PUBLICATION = {
   UNDO_MIRROR: 'Undo mirror publication',
   UNDO_NOT_INTERESTED: 'Undo not interested publication',
   UNLIKE: 'Unlike publication',
+  UNPIN: 'Unpin publication',
   WIDGET: {
     POLL: { VOTE: 'Vote on poll' }
   }
@@ -91,7 +95,7 @@ export const NOTIFICATION = {
 export const HOME = {
   SELECT_USER_FEED: 'Select user feed',
   SWITCH_FOLLOWING_FEED: 'Switch to following feed',
-  SWITCH_HIGHLIGHTS_FEED: 'Switch to highlights feed',
+  SWITCH_FORYOU_FEED: 'Switch to for you feed',
   SWITCH_PREMIUM_FEED: 'Switch to premium feed'
 };
 
@@ -102,6 +106,7 @@ export const EXPLORE = {
 
 export const SETTINGS = {
   ACCOUNT: {
+    REQUEST_VERIFICATION: 'Request verification',
     RESEND_EMAIL_VERIFICATION: 'Resend email verification',
     SET_DEFAULT_PROFILE: 'Set default profile',
     SET_EMAIL: 'Set email',
@@ -139,8 +144,7 @@ export const SETTINGS = {
   },
   PREFERENCES: {
     TOGGLE_HIGH_SIGNAL_NOTIFICATION_FILTER:
-      'Toggle high signal notification filter',
-    TOGGLE_PUSH_NOTIFICATIONS: 'Toggle push notifications'
+      'Toggle high signal notification filter'
   },
   PRO: {
     APP_ICON: 'Update app icon'
@@ -174,8 +178,7 @@ export const GARDENER = {
     P2P_UNRECOMMEND: 'P2P unrecommend profile'
   },
   REPORT: 'Gardener report',
-  SEARCH_PUBLICATION: 'Gardener search publication',
-  TOGGLE_MODE: 'Toggle gardener mode'
+  SEARCH_PUBLICATION: 'Gardener search publication'
 };
 
 export const STAFFTOOLS = {
@@ -184,9 +187,6 @@ export const STAFFTOOLS = {
     CREATE: 'Staff Tool: Create feature flag',
     DELETE: 'Staff Tool: Delete feature flag',
     KILL: 'Staff Tool: Kill feature flag'
-  },
-  SIGNUP_CONTRACT: {
-    REFILL: 'Staff Tool: Refill relayer'
   },
   STAFF_PICKS: {
     CREATE: 'Staff Tool: Create staff pick',
@@ -224,7 +224,6 @@ export const MISCELLANEOUS = {
     OPEN_FEEDBACK: 'Open feedback',
     OPEN_GITHUB: 'Open GitHub',
     OPEN_STATUS: 'Open status',
-    OPEN_SUPPORT: 'Open support',
     OPEN_VERCEL: 'Open Vercel'
   },
   OPEN_GITCOIN: 'Open Gitcoin'
@@ -258,6 +257,7 @@ export const ALL_EVENTS = {
 };
 
 export enum ProfileLinkSource {
+  ClubMembers = 'club-members',
   Collects = 'collects',
   Followers = 'followers',
   Following = 'following',

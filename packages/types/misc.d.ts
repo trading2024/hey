@@ -40,9 +40,41 @@ export interface Nft {
   sourceUrl: string;
 }
 
+export type ButtonType = 'link' | 'mint' | 'post_redirect' | 'post' | 'tx';
+export type FrameTransaction = {
+  chainId: string;
+  method: string;
+  params: {
+    abi: string[];
+    data: `0x${string}`;
+    to: `0x${string}`;
+    value: bigint;
+  };
+};
+
+export interface Frame {
+  acceptsAnonymous: boolean;
+  acceptsLens: boolean;
+  buttons: {
+    action: ButtonType;
+    button: string;
+    postUrl?: string;
+    target?: string;
+  }[];
+  frameUrl: string;
+  image: string;
+  inputText: null | string;
+  lensFramesVersion: null | string;
+  openFramesVersion: null | string;
+  postUrl: string;
+  state: null | string;
+  transaction?: FrameTransaction;
+}
+
 export interface OG {
   description: null | string;
   favicon: null | string;
+  frame: Frame | null;
   html: null | string;
   image: null | string;
   lastIndexedAt?: string;

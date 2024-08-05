@@ -1,6 +1,7 @@
 fragment AudioMetadataV3Fields on AudioMetadataV3 {
   id
-  rawURI
+  title
+  content
   tags
   attributes {
     ...MetadataAttributeFields
@@ -11,10 +12,4 @@ fragment AudioMetadataV3Fields on AudioMetadataV3 {
   attachments {
     ...PublicationMetadataMediaFields
   }
-  title
-  content
-  encryptedWith {
-    ...PublicationMetadataLitEncryptionFields
-  }
-  appId
 }

@@ -8,7 +8,7 @@ import { CursorArrowRippleIcon as CursorArrowRippleIconOutline } from '@heroicon
 import { HEY_API_URL } from '@hey/data/constants';
 import { ProfileLinkSource } from '@hey/data/tracking';
 import { useStaffPicksQuery } from '@hey/lens';
-import { Card, EmptyState, ErrorMessage } from '@hey/ui';
+import { Card, EmptyState, ErrorMessage, H5 } from '@hey/ui';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { useProfileStore } from 'src/store/persisted/useProfileStore';
@@ -18,7 +18,7 @@ interface BatchRange {
   start: number;
 }
 
-const Title: FC = () => <p className="text-lg font-semibold">Staff Picks</p>;
+const Title: FC = () => <H5>Staff Picks</H5>;
 
 const StaffPicks: FC = () => {
   const { currentProfile } = useProfileStore();
@@ -49,9 +49,11 @@ const StaffPicks: FC = () => {
   };
 
   const batchRanges = dividePicks(picks || [], 3); // We want to divide into three batches
-
   const batchVariables = batchRanges.map((range) =>
     picks?.slice(range.start, range.end).map((pick) => pick.profileId)
+  );
+  const canLoadStaffPicks = batchVariables.every(
+    (batch) => (batch || []).length > 0
   );
 
   const {
@@ -59,7 +61,7 @@ const StaffPicks: FC = () => {
     error: profilesError,
     loading: profilesLoading
   } = useStaffPicksQuery({
-    skip: picks?.length === 0,
+    skip: !canLoadStaffPicks,
     variables: {
       batch1: batchVariables[0] || [],
       batch2: batchVariables[1] || [],
@@ -98,8 +100,8 @@ const StaffPicks: FC = () => {
     ...(staffPicks?.batch2?.items || []),
     ...(staffPicks?.batch3?.items || [])
   ];
-
-  const filteredProfiles = profiles
+  const randomProfiles = profiles.sort(() => Math.random() - Math.random());
+  const filteredProfiles = randomProfiles
     .filter(
       (profile) =>
         !profile.operations.isBlockedByMe.value &&

@@ -1,16 +1,33 @@
+import winston from 'winston';
+
 class Logger {
-  private formatMessage(level: string, message: string, colorCode: string) {
-    return `\x1b[${colorCode}m${level}\x1b[0m: ${message}`;
+  private logger: winston.Logger;
+
+  constructor() {
+    this.logger = winston.createLogger({
+      format: winston.format.combine(
+        winston.format.colorize(),
+        winston.format.json(),
+        winston.format.simple(),
+        winston.format.printf(({ level, message }) => {
+          return `${level}: ${message}`;
+        })
+      ),
+      level: 'info',
+      transports: [new winston.transports.Console()]
+    });
   }
 
-  error(message: string) {
-    const formattedMessage = this.formatMessage('ERROR', message, '1;31');
-    console.error(formattedMessage);
+  error(message: string, error?: Error | unknown) {
+    this.logger.error(message, error);
   }
 
   info(message: string) {
-    const formattedMessage = this.formatMessage('INFO', message, '1;34');
-    console.log(formattedMessage);
+    this.logger.info(message);
+  }
+
+  warn(message: string, error?: Error | unknown) {
+    this.logger.warn(message, error);
   }
 }
 

@@ -1,28 +1,31 @@
-const { withSentryConfig } = require('@sentry/nextjs');
-
 const allowedBots =
   '.*(bot|telegram|baidu|bing|yandex|iframely|whatsapp|facebook).*';
+const {
+  NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA,
+  VERCEL_DEPLOYMENT_ID,
+  VERCEL_GITHUB_COMMIT_SHA
+} = process.env;
+const COMMIT_SHA =
+  NEXT_PUBLIC_VERCEL_GIT_COMMIT_SHA || VERCEL_GITHUB_COMMIT_SHA || 'local';
+const DEPLOYMENT_ID = VERCEL_DEPLOYMENT_ID || 'unknown';
 
 /** @type {import('next').NextConfig} */
-const nextConfig = {
-  experimental: {
-    instrumentationHook: true
-  },
+module.exports = {
   headers() {
     return [
       {
         headers: [
-          { key: 'Document-Policy', value: 'js-profiling' },
+          { key: 'Referrer-Policy', value: 'strict-origin' },
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'X-XSS-Protection', value: '1; mode=block' },
-          { key: 'Referrer-Policy', value: 'strict-origin' }
+          { key: 'X-Hey-Version', value: COMMIT_SHA },
+          { key: 'X-Hey-Deployment', value: DEPLOYMENT_ID }
         ],
         source: '/(.*)'
       }
     ];
   },
   poweredByHeader: false,
-  productionBrowserSourceMaps: true,
   reactStrictMode: false,
   redirects() {
     return [
@@ -61,8 +64,7 @@ const nextConfig = {
         source: '/-/changelog'
       },
       {
-        destination:
-          'https://plugins.crisp.chat/urn:crisp.im:contact-form:0/contact/37355035-47aa-4f42-ad47-cffc3d1fea16',
+        destination: 'https://heyverse.zohodesk.in/portal/en/newticket',
         permanent: true,
         source: '/support'
       },
@@ -71,18 +73,24 @@ const nextConfig = {
           'https://yoginth.notion.site/ff1926a080fa44bc9d40ee534f627949',
         permanent: true,
         source: '/-/mod-guide'
+      },
+      // Redirect: hey.xyz/u/lens/<localname> > hey.xyz/u/<localname>
+      {
+        destination: '/u/:handle',
+        permanent: true,
+        source: '/u/:namespace/:handle'
       }
     ];
   },
   rewrites() {
     return [
       {
-        destination: `${process.env.NEXT_PUBLIC_OG_URL}/u/:match*`,
+        destination: 'https://og.hey.xyz/u/:match*',
         has: [{ key: 'user-agent', type: 'header', value: allowedBots }],
         source: '/u/:match*'
       },
       {
-        destination: `${process.env.NEXT_PUBLIC_OG_URL}/posts/:match*`,
+        destination: 'https://og.hey.xyz/posts/:match*',
         has: [{ key: 'user-agent', type: 'header', value: allowedBots }],
         source: '/posts/:match*'
       }
@@ -90,14 +98,3 @@ const nextConfig = {
   },
   transpilePackages: ['data']
 };
-
-module.exports = withSentryConfig(nextConfig, {
-  automaticVercelMonitors: true,
-  disableLogger: true,
-  hideSourceMaps: true,
-  org: 'heyverse',
-  project: 'web',
-  silent: !process.env.CI,
-  tunnelRoute: '/monitoring',
-  widenClientFileUpload: true
-});

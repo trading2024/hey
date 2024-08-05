@@ -3,6 +3,9 @@ import type { CodegenConfig } from '@graphql-codegen/cli';
 import LensEndpoint from '@hey/data/lens-endpoints';
 
 const config: CodegenConfig = {
+  config: {
+    inlineFragmentTypes: 'combine'
+  },
   customFetch: 'node-fetch',
   documents: './documents/**/*.graphql',
   generates: {
@@ -19,7 +22,7 @@ const config: CodegenConfig = {
     afterAllFileWrite: ['eslint --fix', 'prettier --write']
   },
   overwrite: true,
-  schema: LensEndpoint.Staging
+  schema: LensEndpoint.Testnet
 };
 
 export default config;

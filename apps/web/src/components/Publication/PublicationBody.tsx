@@ -14,6 +14,7 @@ import getPublicationData from '@hey/helpers/getPublicationData';
 import getURLs from '@hey/helpers/getURLs';
 import isPublicationMetadataTypeAllowed from '@hey/helpers/isPublicationMetadataTypeAllowed';
 import { isMirrorPublication } from '@hey/helpers/publicationHelpers';
+import { H6 } from '@hey/ui';
 import cn from '@hey/ui/cn';
 import Link from 'next/link';
 import { memo } from 'react';
@@ -61,7 +62,7 @@ const PublicationBody: FC<PublicationBodyProps> = ({
   }
 
   if (targetPublication.isEncrypted) {
-    return <EncryptedPublication publication={targetPublication} />;
+    return <EncryptedPublication />;
   }
 
   if (!isPublicationMetadataTypeAllowed(metadata.__typename)) {
@@ -88,9 +89,12 @@ const PublicationBody: FC<PublicationBodyProps> = ({
       metadata.attributes,
       KNOWN_ATTRIBUTES.HIDE_OEMBED
     ) === 'true';
-  const hasDecentOpenAction = targetPublication.openActionModules.some(
-    (module) => module.contract.address === VerifiedOpenActionModules.DecentNFT
-  );
+  const hasDecentOpenAction = targetPublication.openActionModules
+    .filter((module) => module.__typename === 'UnknownOpenActionModuleSettings')
+    .some(
+      (module) =>
+        module.contract.address === VerifiedOpenActionModules.DecentNFT
+    );
   const showOembed =
     !hasDecentOpenAction &&
     !hideOembed &&
@@ -114,10 +118,10 @@ const PublicationBody: FC<PublicationBodyProps> = ({
         {content}
       </Markup>
       {canShowMore ? (
-        <div className="ld-text-gray-500 mt-4 flex items-center space-x-1 text-sm font-bold">
+        <H6 className="ld-text-gray-500 mt-4 flex items-center space-x-1">
           <EyeIcon className="size-4" />
           <Link href={`/posts/${id}`}>Show more</Link>
-        </div>
+        </H6>
       ) : null}
       {/* Open Action */}
       <OpenActionOnBody publication={targetPublication} />

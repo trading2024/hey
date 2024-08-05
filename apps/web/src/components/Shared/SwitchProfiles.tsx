@@ -19,7 +19,7 @@ import {
   useChallengeLazyQuery,
   useProfilesManagedQuery
 } from '@hey/lens';
-import { ErrorMessage, Image, Spinner } from '@hey/ui';
+import { ErrorMessage, H4, Image, Spinner } from '@hey/ui';
 import cn from '@hey/ui/cn';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
@@ -92,8 +92,9 @@ const SwitchProfiles: FC = () => {
       });
       const accessToken = auth.data?.authenticate.accessToken;
       const refreshToken = auth.data?.authenticate.refreshToken;
+      const identityToken = auth.data?.authenticate.identityToken;
       signOut();
-      signIn({ accessToken, refreshToken });
+      signIn({ accessToken, identityToken, refreshToken });
       Leafwatch.track(PROFILE.SWITCH_PROFILE, { switch_profile_to: id });
       location.reload();
     } catch (error) {
@@ -105,7 +106,7 @@ const SwitchProfiles: FC = () => {
     return (
       <div className="m-5 space-y-5">
         <div className="space-y-2">
-          <div className="text-xl font-bold">Connect your wallet.</div>
+          <H4>Connect your wallet.</H4>
           <div className="ld-text-gray-500 text-sm">
             Seems like you are disconnected from the wallet or trying to access
             this from a different wallet. Please switch to the correct wallet.

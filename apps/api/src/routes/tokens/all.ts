@@ -1,25 +1,42 @@
-import type { Handler } from 'express';
+import type { Request, Response } from 'express';
 
+import heyPg from '@hey/db/heyPg';
+import { getRedis, setRedis } from '@hey/db/redisClient';
 import logger from '@hey/helpers/logger';
-import heyPg from 'src/db/heyPg';
 import catchedError from 'src/helpers/catchedError';
-import { SWR_CACHE_AGE_10_MINS_30_DAYS } from 'src/helpers/constants';
+import { CACHE_AGE_1_DAY } from 'src/helpers/constants';
+import { rateLimiter } from 'src/helpers/middlewares/rateLimiter';
 
-export const get: Handler = async (_, res) => {
-  try {
-    const data = await heyPg.query(`
+export const get = [
+  rateLimiter({ requests: 250, within: 1 }),
+  async (_: Request, res: Response) => {
+    try {
+      const cacheKey = 'allowed-tokens';
+      const cachedData = await getRedis(cacheKey);
+
+      if (cachedData) {
+        logger.info('(cached) All tokens fetched');
+        return res
+          .status(200)
+          .setHeader('Cache-Control', CACHE_AGE_1_DAY)
+          .json({ success: true, tokens: JSON.parse(cachedData) });
+      }
+
+      const data = await heyPg.query(`
       SELECT *
       FROM "AllowedToken"
       ORDER BY priority DESC;
     `);
 
-    logger.info('All tokens fetched');
+      await setRedis(cacheKey, data);
+      logger.info('All tokens fetched');
 
-    return res
-      .status(200)
-      .setHeader('Cache-Control', SWR_CACHE_AGE_10_MINS_30_DAYS)
-      .json({ success: true, tokens: data });
-  } catch (error) {
-    return catchedError(res, error);
+      return res
+        .status(200)
+        .setHeader('Cache-Control', CACHE_AGE_1_DAY)
+        .json({ success: true, tokens: data });
+    } catch (error) {
+      return catchedError(res, error);
+    }
   }
-};
+];

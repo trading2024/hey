@@ -17,12 +17,12 @@ import { Button, EmptyState, ErrorMessage } from '@hey/ui';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import { Virtuoso } from 'react-virtuoso';
-import { useProfileRestriction } from 'src/store/non-persisted/useProfileRestriction';
+import { useProfileStatus } from 'src/store/non-persisted/useProfileStatus';
 import { useProfileStore } from 'src/store/persisted/useProfileStore';
 
 const List: FC = () => {
   const { currentProfile } = useProfileStore();
-  const { isSuspended } = useProfileRestriction();
+  const { isSuspended } = useProfileStatus();
   const [revoking, setRevoking] = useState(false);
   const [revokeingSessionId, setRevokeingSessionId] = useState<null | string>(
     null
@@ -79,13 +79,11 @@ const List: FC = () => {
   const hasMore = pageInfo?.next;
 
   const onEndReached = async () => {
-    if (!hasMore) {
-      return;
+    if (hasMore) {
+      await fetchMore({
+        variables: { request: { ...request, cursor: pageInfo?.next } }
+      });
     }
-
-    return await fetchMore({
-      variables: { request: { ...request, cursor: pageInfo?.next } }
-    });
   };
 
   if (loading) {
@@ -112,48 +110,46 @@ const List: FC = () => {
       computeItemKey={(index, session) => `${session.authorizationId}-${index}`}
       data={approvedAuthentications}
       endReached={onEndReached}
-      itemContent={(_, session) => {
-        return (
-          <div className="flex flex-wrap items-start justify-between p-5">
-            <div>
-              <div className="mb-3 flex items-center space-x-2">
-                <ComputerDesktopIcon className="size-8" />
-                <div>
-                  {session.browser ? <span>{session.browser}</span> : null}
-                  {session.os ? <span> - {session.os}</span> : null}
-                </div>
-              </div>
-              <div className="ld-text-gray-500 space-y-1 text-sm">
-                {session.origin ? (
-                  <div>
-                    <b>Origin -</b> {session.origin}
-                  </div>
-                ) : null}
-                <div>
-                  <b>Registered -</b>{' '}
-                  {formatDate(session.createdAt, 'MMM D, YYYY - hh:mm:ss A')}
-                </div>
-                <div>
-                  <b>Last accessed -</b>{' '}
-                  {formatDate(session.updatedAt, 'MMM D, YYYY - hh:mm:ss A')}
-                </div>
-                <div>
-                  <b>Expires at -</b>{' '}
-                  {formatDate(session.expiresAt, 'MMM D, YYYY - hh:mm:ss A')}
-                </div>
+      itemContent={(_, session) => (
+        <div className="flex flex-wrap items-start justify-between p-5">
+          <div>
+            <div className="mb-3 flex items-center space-x-2">
+              <ComputerDesktopIcon className="size-8" />
+              <div>
+                {session.browser ? <span>{session.browser}</span> : null}
+                {session.os ? <span> - {session.os}</span> : null}
               </div>
             </div>
-            <Button
-              disabled={
-                revoking && revokeingSessionId === session.authorizationId
-              }
-              onClick={() => revoke(session.authorizationId)}
-            >
-              Revoke
-            </Button>
+            <div className="ld-text-gray-500 space-y-1 text-sm">
+              {session.origin ? (
+                <div>
+                  <b>Origin -</b> {session.origin}
+                </div>
+              ) : null}
+              <div>
+                <b>Registered -</b>{' '}
+                {formatDate(session.createdAt, 'MMM D, YYYY - hh:mm:ss A')}
+              </div>
+              <div>
+                <b>Last accessed -</b>{' '}
+                {formatDate(session.updatedAt, 'MMM D, YYYY - hh:mm:ss A')}
+              </div>
+              <div>
+                <b>Expires at -</b>{' '}
+                {formatDate(session.expiresAt, 'MMM D, YYYY - hh:mm:ss A')}
+              </div>
+            </div>
           </div>
-        );
-      }}
+          <Button
+            disabled={
+              revoking && revokeingSessionId === session.authorizationId
+            }
+            onClick={() => revoke(session.authorizationId)}
+          >
+            Revoke
+          </Button>
+        </div>
+      )}
       useWindowScroll
     />
   );

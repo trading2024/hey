@@ -57,9 +57,9 @@ const getAuthApiHeadersForTest = async ({ staff = true } = {}) => {
     variables: { request: { id: challenge.challenge.id, signature } }
   });
 
-  const accessToken = auth?.authenticate.accessToken;
+  const identityToken = auth?.authenticate.identityToken;
 
-  return { 'X-Access-Token': accessToken, 'X-Lens-Network': 'testnet' };
+  return { 'X-Identity-Token': identityToken };
 };
 
 export default getAuthApiHeadersForTest;

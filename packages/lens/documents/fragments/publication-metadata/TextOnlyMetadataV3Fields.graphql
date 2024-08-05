@@ -1,13 +1,8 @@
 fragment TextOnlyMetadataV3Fields on TextOnlyMetadataV3 {
   id
-  rawURI
+  content
   tags
   attributes {
     ...MetadataAttributeFields
   }
-  content
-  encryptedWith {
-    ...PublicationMetadataLitEncryptionFields
-  }
-  appId
 }

@@ -4,7 +4,7 @@ import type { StateSnapshot, VirtuosoHandle } from 'react-virtuoso';
 
 import SinglePublication from '@components/Publication/SinglePublication';
 import PublicationsShimmer from '@components/Shared/Shimmer/PublicationsShimmer';
-import { RectangleStackIcon } from '@heroicons/react/24/outline';
+import { ChatBubbleBottomCenterIcon } from '@heroicons/react/24/outline';
 import {
   CustomFiltersType,
   LimitType,
@@ -27,7 +27,6 @@ const Publications: FC<PublicationsProps> = ({ query }) => {
   const { fetchAndStoreTips } = useTipsStore();
   const virtuoso = useRef<VirtuosoHandle>(null);
 
-  // Variables
   const request: PublicationSearchRequest = {
     limit: LimitType.TwentyFive,
     query,
@@ -57,16 +56,14 @@ const Publications: FC<PublicationsProps> = ({ query }) => {
   };
 
   const onEndReached = async () => {
-    if (!hasMore) {
-      return;
+    if (hasMore) {
+      const { data } = await fetchMore({
+        variables: { request: { ...request, cursor: pageInfo?.next } }
+      });
+      const ids = data?.searchPublications?.items?.map((p) => p.id) || [];
+      await fetchAndStoreViews(ids);
+      await fetchAndStoreTips(ids);
     }
-
-    const { data } = await fetchMore({
-      variables: { request: { ...request, cursor: pageInfo?.next } }
-    });
-    const ids = data?.searchPublications?.items?.map((p) => p.id) || [];
-    await fetchAndStoreViews(ids);
-    await fetchAndStoreTips(ids);
   };
 
   if (loading) {
@@ -76,7 +73,7 @@ const Publications: FC<PublicationsProps> = ({ query }) => {
   if (publications?.length === 0) {
     return (
       <EmptyState
-        icon={<RectangleStackIcon className="size-8" />}
+        icon={<ChatBubbleBottomCenterIcon className="size-8" />}
         message={
           <span>
             No publications for <b>&ldquo;{query}&rdquo;</b>
@@ -98,15 +95,13 @@ const Publications: FC<PublicationsProps> = ({ query }) => {
         data={publications}
         endReached={onEndReached}
         isScrolling={onScrolling}
-        itemContent={(index, publication) => {
-          return (
-            <SinglePublication
-              isFirst={index === 0}
-              isLast={index === (publications?.length || 0) - 1}
-              publication={publication}
-            />
-          );
-        }}
+        itemContent={(index, publication) => (
+          <SinglePublication
+            isFirst={index === 0}
+            isLast={index === (publications?.length || 0) - 1}
+            publication={publication}
+          />
+        )}
         ref={virtuoso}
         restoreStateFrom={
           virtuosoState.ranges.length === 0

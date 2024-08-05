@@ -6,11 +6,10 @@ import urlcat from 'urlcat';
  * @returns The favicon url.
  */
 const getFavicon = (url: string) => {
-  const sanitizedUrl = url.replace('https://', '').replace('http://', '');
+  const { hostname } = new URL(url);
 
-  return urlcat('https://www.google.com/s2/favicons', {
-    domain: sanitizedUrl,
-    sz: 128
+  return urlcat('https://external-content.duckduckgo.com/ip3/:domain.ico', {
+    domain: hostname || 'unknowndomain'
   });
 };
 

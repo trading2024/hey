@@ -4,14 +4,13 @@ import getEnvConfig from './utils/getEnvConfig';
 
 // Environments
 export const IS_PRODUCTION = process.env.NEXT_PUBLIC_IS_PRODUCTION === 'true';
-export const IS_PREVIEW = process.env.NEXT_PUBLIC_VERCEL_ENV === 'preview';
 
 // Lens and Hey Env Config
 export const LENS_NETWORK = process.env.NEXT_PUBLIC_LENS_NETWORK || 'mainnet';
 
 export const LENS_API_URL = getEnvConfig().lensApiEndpoint;
 export const HEY_API_URL = IS_PRODUCTION
-  ? getEnvConfig().heyApiEndpoint
+  ? 'https://api.hey.xyz'
   : 'http://localhost:4784';
 export const LENS_HUB = getEnvConfig().lensHub;
 export const LENS_HANDLES = getEnvConfig().lensHandles;
@@ -19,7 +18,6 @@ export const TOKEN_HANDLE_REGISTRY = getEnvConfig().tokenHandleRegistry;
 export const HEY_LENS_SIGNUP = getEnvConfig().heyLensSignup;
 export const DEFAULT_COLLECT_TOKEN = getEnvConfig().defaultCollectToken;
 export const PERMISSIONLESS_CREATOR = getEnvConfig().permissionlessCreator;
-export const HEY_PRO = getEnvConfig().heyPro;
 export const HEY_TIPPING = getEnvConfig().heyTipping;
 
 export const IS_MAINNET = LENS_API_URL === LensEndpoint.Mainnet;
@@ -42,7 +40,8 @@ export const WMATIC_ADDRESS = IS_MAINNET
   : '0x9c3c9283d3e44854697cd22d3faa240cfb032889';
 export const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 export const PERMIT_2_ADDRESS = '0x000000000022D473030F116dDEE9F6B43aC78BA3';
-export const REWARDS_ADDRESS = '0x698386C93513d6D0C58f296633A7A3e529bd4026';
+export const REWARDS_ADDRESS = '0x69696378FaEd01315c762e5122fFFBc7bab03570';
+export const PRO_EOA_ADDRESS = '0xCAFEfB235AE1c10dC579338d06D90F0c89c4e5D6';
 export const REWARDS_PROFILE_ID = '12'; // 0x0c
 export const TEST_WALLET_ADDRESS = '0xb9C6e304545386E95d5c4ab183EE97A13555A49d';
 export const TEST_PK =
@@ -52,15 +51,13 @@ export const TEST_NON_STAFF_LENS_ID = '0x4c';
 export const HEY_CURATED_ID = '0x0214f6';
 export const ZERO_PUBLICATION_ID = '0x00-0x00';
 export const HANDLE_PREFIX = 'lens/';
+export const CLUB_HANDLE_PREFIX = 'club/';
 export const SIGNUP_PRICE = IS_MAINNET ? 8 : 1;
-export const PRO_TIER_PRICES = {
-  annually: 90,
-  monthly: 8
-};
+export const MONTHLY_PRO_PRICE = 10;
 export const HEY_MEMBERSHIP_NFT = IS_MAINNET
   ? '0x100372BBF7f975f6b1448fB11AB0F814b2740EEd'
   : '0x75120677aBF34ae95a916C6E9DbB610a06536CC3';
-export const SUPER_ADMIN = '0x0d';
+export const HEY_MEMBERSHIP_NFT_PUBLICATION_ID = '0x020b69-0x01';
 export const DEFAULT_DECENT_OA_TOKEN = {
   contractAddress: '0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270',
   decimals: 18,
@@ -103,6 +100,7 @@ export const MOONPAY_URL = IS_MAINNET
   ? 'https://buy.moonpay.com'
   : 'https://buy-sandbox.moonpay.com';
 export const HEY_IMAGEKIT_URL = 'https://ik.imagekit.io/lensterimg';
+export const CLUBS_API_URL = 'https://us-central1-orbapp.cloudfunctions.net';
 
 // Tokens / Keys
 export const WALLETCONNECT_PROJECT_ID = 'cd542acc70c2b548030f9901a52e70c8';
@@ -110,8 +108,8 @@ export const GIPHY_KEY = 'yNwCXMKkiBrxyyFduF56xCbSuJJM8cMd';
 export const GITCOIN_PASSPORT_KEY = 'xn9e7AFv.aEfS0ioNhaVtww1jdwnsWtxnrNHspVsS';
 export const LIVEPEER_KEY = '70508bf8-2e16-4594-852d-5aed798f6403';
 export const ALCHEMY_API_KEY = 'Xx-4a1SyWtS9U4h0cEuRmvgYtGeVOlv7';
-export const THIRDWEB_CLIENT_ID = '0e8fa22aa33b3da60c593b4864a2e2d1';
-export const CRISP_WEBSITE_ID = '37355035-47aa-4f42-ad47-cffc3d1fea16';
+export const CLUBS_APP_TOKEN =
+  'Qun7aDFo4FS7Dt2b9Ea8ve5TqvuXiCJXjZZTsao5Y9viFJxSEi5gYZa7DybrSzDGXST5L2vWMjBXzjsppj5RERo3AdPnJ3TVYuY2cLxBFa592rkjzU';
 
 // Named transforms for ImageKit
 export const AVATAR = 'tr:w-350,h-350';
@@ -132,6 +130,13 @@ export const STAFF_PICK_FEATURE_ID = '73d2f48d-0291-4a36-adc2-9737057ad2b7';
 // Known Lens Protocol Attributes
 export const KNOWN_ATTRIBUTES = {
   HIDE_OEMBED: 'hideOembed',
-  POLL_ID: 'pollId',
-  SWAP_OA_DEFAULT_AMOUNT: 'swapOADefaultAmount'
+  POLL_ID: 'heyPollId'
+};
+
+// Tanstack Stale Times
+
+export const STALE_TIMES = {
+  FIVE_MINUTES: 5 * 60 * 1000,
+  SIX_HOURS: 6 * 60 * 60 * 1000,
+  THIRTY_MINUTES: 30 * 60 * 1000
 };

@@ -7,27 +7,19 @@ import {
   signIn,
   signOut
 } from 'src/store/persisted/useAuthStore';
-import { v4 as uuid } from 'uuid';
 
 const REFRESH_AUTHENTICATION_MUTATION = `
   mutation Refresh($request: RefreshRequest!) {
     refresh(request: $request) {
       accessToken
       refreshToken
+      identityToken
     }
   }
 `;
 
 const authLink = new ApolloLink((operation, forward) => {
   const { accessToken, refreshToken } = hydrateAuthTokens();
-
-  // Set Request ID
-  operation.setContext(({ headers = {} }) => ({
-    headers: {
-      ...headers,
-      'x-request-id': uuid()
-    }
-  }));
 
   if (!accessToken || !refreshToken) {
     signOut();
@@ -38,9 +30,7 @@ const authLink = new ApolloLink((operation, forward) => {
 
   if (!expiringSoon) {
     operation.setContext({
-      headers: {
-        'X-Access-Token': accessToken ? `Bearer ${accessToken}` : ''
-      }
+      headers: { 'X-Access-Token': accessToken || '' }
     });
 
     return forward(operation);
@@ -60,10 +50,9 @@ const authLink = new ApolloLink((operation, forward) => {
       .then(({ data }) => {
         const accessToken = data?.data?.refresh?.accessToken;
         const refreshToken = data?.data?.refresh?.refreshToken;
-        operation.setContext({
-          headers: { 'X-Access-Token': `Bearer ${accessToken}` }
-        });
-        signIn({ accessToken, refreshToken });
+        const identityToken = data?.data?.refresh?.identityToken;
+        operation.setContext({ headers: { 'X-Access-Token': accessToken } });
+        signIn({ accessToken, identityToken, refreshToken });
 
         return toPromise(forward(operation));
       })

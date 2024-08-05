@@ -1,18 +1,18 @@
 import type { FiatRate } from '@hey/types/lens';
 import type { FC } from 'react';
 
-import getAuthApiHeaders from '@helpers/getAuthApiHeaders';
+import { getAuthApiHeaders } from '@helpers/getAuthApiHeaders';
 import getCurrentSession from '@helpers/getCurrentSession';
-import { HEY_API_URL } from '@hey/data/constants';
+import { HEY_API_URL, STALE_TIMES } from '@hey/data/constants';
 import { FeatureFlag } from '@hey/data/feature-flags';
 import getAllTokens from '@hey/helpers/api/getAllTokens';
 import getPreferences from '@hey/helpers/api/getPreferences';
-import getScore from '@hey/helpers/api/getScore';
+import getProfileDetails from '@hey/helpers/api/getProfileFlags';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { usePreferencesStore } from 'src/store/non-persisted/usePreferencesStore';
-import { useProfileRestriction } from 'src/store/non-persisted/useProfileRestriction';
-import { useScoreStore } from 'src/store/non-persisted/useScoreStore';
+import { useProfileDetailsStore } from 'src/store/non-persisted/useProfileDetailsStore';
+import { useProfileStatus } from 'src/store/non-persisted/useProfileStatus';
 import { useAllowedTokensStore } from 'src/store/persisted/useAllowedTokensStore';
 import { useFeatureFlagsStore } from 'src/store/persisted/useFeatureFlagsStore';
 import { useRatesStore } from 'src/store/persisted/useRatesStore';
@@ -23,7 +23,6 @@ const PreferencesProvider: FC = () => {
   const { setVerifiedMembers } = useVerifiedMembersStore();
   const { setAllowedTokens } = useAllowedTokensStore();
   const { setFiatRates } = useRatesStore();
-  const { setScore } = useScoreStore();
   const {
     setAppIcon,
     setEmail,
@@ -31,104 +30,91 @@ const PreferencesProvider: FC = () => {
     setHasDismissedOrMintedMembershipNft,
     setHighSignalNotificationFilter
   } = usePreferencesStore();
-  const { setRestriction } = useProfileRestriction();
-  const { setFeatureFlags, setGardenerMode, setStaffMode } =
-    useFeatureFlagsStore();
+  const { setPinnedPublication } = useProfileDetailsStore();
+  const { setStatus } = useProfileStatus();
+  const { setFeatureFlags, setStaffMode } = useFeatureFlagsStore();
 
-  // Fetch preferences and set initial values
-  useQuery({
-    enabled: Boolean(sessionProfileId),
-    queryFn: () =>
-      getPreferences(sessionProfileId, getAuthApiHeaders()).then(
-        (preferences) => {
-          // Profile preferences
-          setHighSignalNotificationFilter(
-            preferences.highSignalNotificationFilter
-          );
-          setAppIcon(preferences.appIcon);
+  const getPreferencesData = async () => {
+    const preferences = await getPreferences(getAuthApiHeaders());
 
-          // Email preferences
-          setEmail(preferences.email);
-          setEmailVerified(preferences.emailVerified);
-
-          // Feature flags
-          setFeatureFlags(preferences.features);
-          setStaffMode(preferences.features.includes(FeatureFlag.StaffMode));
-          setGardenerMode(
-            preferences?.features.includes(FeatureFlag.GardenerMode)
-          );
-          setRestriction({
-            isFlagged: preferences.features.includes(FeatureFlag.Flagged),
-            isSuspended: preferences.features.includes(FeatureFlag.Suspended)
-          });
-
-          // Membership NFT
-          setHasDismissedOrMintedMembershipNft(
-            preferences.hasDismissedOrMintedMembershipNft
-          );
-
-          return true;
-        }
+    setHighSignalNotificationFilter(preferences.highSignalNotificationFilter);
+    setAppIcon(preferences.appIcon);
+    setEmail(preferences.email);
+    setEmailVerified(preferences.emailVerified);
+    setFeatureFlags(preferences.features);
+    setStaffMode(preferences.features.includes(FeatureFlag.StaffMode));
+    setStatus({
+      isCommentSuspended: preferences.features.includes(
+        FeatureFlag.CommentSuspended
       ),
-    queryKey: ['getPreferences', sessionProfileId || '']
-  });
+      isSuspended: preferences.features.includes(FeatureFlag.Suspended)
+    });
+    setHasDismissedOrMintedMembershipNft(
+      preferences.hasDismissedOrMintedMembershipNft
+    );
 
-  // Fetch verified members
-  const getVerifiedMembers = async () => {
+    return true;
+  };
+
+  const getProfileDetailsData = async () => {
+    const details = await getProfileDetails(sessionProfileId);
+    setPinnedPublication(details?.pinnedPublication || null);
+    return true;
+  };
+
+  const getVerifiedMembersData = async () => {
     try {
       const response = await axios.get(`${HEY_API_URL}/misc/verified`);
-      const { data } = response;
-      setVerifiedMembers(data.result || []);
+      setVerifiedMembers(response.data.result || []);
       return true;
     } catch {
       return false;
     }
   };
 
-  // Fetch score
-  useQuery({
-    enabled: Boolean(sessionProfileId),
-    queryFn: () =>
-      getScore(sessionProfileId).then((score) => {
-        setScore(score.score);
-        return score;
-      }),
-    queryKey: ['getScore', sessionProfileId]
-  });
+  const getAllowedTokensData = async () => {
+    const tokens = await getAllTokens();
+    setAllowedTokens(tokens);
+    return tokens;
+  };
 
-  useQuery({
-    queryFn: getVerifiedMembers,
-    queryKey: ['getVerifiedMembers']
-  });
-
-  // Fetch allowed tokens
-  useQuery({
-    queryFn: () =>
-      getAllTokens().then((tokens) => {
-        setAllowedTokens(tokens);
-        return tokens;
-      }),
-    queryKey: ['getAllTokensPreference']
-  });
-
-  const getFiatRates = async (): Promise<FiatRate[]> => {
+  const getFiatRatesData = async (): Promise<FiatRate[]> => {
     try {
       const response = await axios.get(`${HEY_API_URL}/lens/rate`);
-      const { data } = response;
-      return data.result || [];
+      return response.data.result || [];
     } catch {
       return [];
     }
   };
 
-  // Fetch fiat rates
+  useQuery({
+    enabled: Boolean(sessionProfileId),
+    queryFn: getPreferencesData,
+    queryKey: ['getPreferences', sessionProfileId || '']
+  });
+  useQuery({
+    enabled: Boolean(sessionProfileId),
+    queryFn: getProfileDetailsData,
+    queryKey: ['getProfileDetails', sessionProfileId || '']
+  });
+  useQuery({
+    queryFn: getVerifiedMembersData,
+    queryKey: ['getVerifiedMembers'],
+    staleTime: STALE_TIMES.THIRTY_MINUTES
+  });
+  useQuery({
+    queryFn: getAllowedTokensData,
+    queryKey: ['getAllowedTokens'],
+    staleTime: STALE_TIMES.THIRTY_MINUTES
+  });
   useQuery({
     queryFn: () =>
-      getFiatRates().then((rates) => {
+      getFiatRatesData().then((rates) => {
         setFiatRates(rates);
         return rates;
       }),
-    queryKey: ['getFiatRates']
+    queryKey: ['getFiatRates'],
+    staleTime: STALE_TIMES.FIVE_MINUTES
   });
 
   return null;

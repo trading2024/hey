@@ -4,7 +4,7 @@ import type { FC } from 'react';
 import type { Address } from 'viem';
 
 import errorToast from '@helpers/errorToast';
-import getAuthApiHeaders from '@helpers/getAuthApiHeaders';
+import { getAuthApiHeaders } from '@helpers/getAuthApiHeaders';
 import { Leafwatch } from '@helpers/leafwatch';
 import { HeyTipping } from '@hey/abis';
 import { Errors } from '@hey/data';
@@ -18,7 +18,7 @@ import {
 } from '@hey/data/constants';
 import { PUBLICATION } from '@hey/data/tracking';
 import formatAddress from '@hey/helpers/formatAddress';
-import { Button, HelpTooltip, Input, Select, Spinner } from '@hey/ui';
+import { Button, H6, HelpTooltip, Input, Select, Spinner } from '@hey/ui';
 import cn from '@hey/ui/cn';
 import axios from 'axios';
 import { useRef, useState } from 'react';
@@ -26,7 +26,7 @@ import toast from 'react-hot-toast';
 import useHandleWrongNetwork from 'src/hooks/useHandleWrongNetwork';
 import usePreventScrollOnNumberInput from 'src/hooks/usePreventScrollOnNumberInput';
 import { useGlobalModalStateStore } from 'src/store/non-persisted/useGlobalModalStateStore';
-import { useProfileRestriction } from 'src/store/non-persisted/useProfileRestriction';
+import { useProfileStatus } from 'src/store/non-persisted/useProfileStatus';
 import { useTipsStore } from 'src/store/non-persisted/useTipsStore';
 import { useAllowedTokensStore } from 'src/store/persisted/useAllowedTokensStore';
 import { useProfileStore } from 'src/store/persisted/useProfileStore';
@@ -69,7 +69,7 @@ const Action: FC<ActionProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   usePreventScrollOnNumberInput(inputRef);
 
-  const { isSuspended } = useProfileRestriction();
+  const { isSuspended } = useProfileStatus();
   const handleWrongNetwork = useHandleWrongNetwork();
 
   const { address } = useAccount();
@@ -94,35 +94,10 @@ const Action: FC<ActionProps> = ({
     query: { enabled: Boolean(txHash) }
   });
 
-  if (!currentProfile) {
-    return (
-      <div className="m-5">
-        <Button
-          className={submitButtonClassName}
-          onClick={() => {
-            if (!currentProfile) {
-              closePopover();
-              setShowAuthModal(true);
-              return;
-            }
-          }}
-        >
-          Log in to tip
-        </Button>
-      </div>
-    );
-  }
-
-  if (!address) {
-    return (
-      <div className="m-5 space-y-3 text-sm font-bold">
-        <div>Connect to correct wallet to tip!</div>
-        <div className="ld-text-gray-500">
-          Switch to: {formatAddress(currentProfile?.ownedBy.address)}
-        </div>
-      </div>
-    );
-  }
+  const onError = (error: any) => {
+    setIsLoading(false);
+    errorToast(error);
+  };
 
   const allowance = parseFloat(data?.toString() || '0');
   const usdRate =
@@ -179,7 +154,7 @@ const Action: FC<ActionProps> = ({
       });
       return;
     } catch (error) {
-      errorToast(error);
+      onError(error);
     } finally {
       setIsLoading(false);
     }
@@ -230,7 +205,7 @@ const Action: FC<ActionProps> = ({
       triggerConfetti();
       return;
     } catch (error) {
-      errorToast(error);
+      onError(error);
     } finally {
       setIsLoading(false);
     }
@@ -243,6 +218,36 @@ const Action: FC<ActionProps> = ({
     !hasAllowance ||
     isWaitingForTransaction ||
     isGettingAllowance;
+
+  if (!currentProfile) {
+    return (
+      <div className="m-5">
+        <Button
+          className={submitButtonClassName}
+          onClick={() => {
+            if (!currentProfile) {
+              closePopover();
+              setShowAuthModal(true);
+              return;
+            }
+          }}
+        >
+          Log in to tip
+        </Button>
+      </div>
+    );
+  }
+
+  if (!address) {
+    return (
+      <div className="m-5 space-y-3">
+        <H6>Connect to correct wallet to tip!</H6>
+        <H6 className="ld-text-gray-500">
+          Switch to: {formatAddress(currentProfile?.ownedBy.address)}
+        </H6>
+      </div>
+    );
+  }
 
   return (
     <div className="m-5 space-y-3">
@@ -337,7 +342,7 @@ const Action: FC<ActionProps> = ({
         <div>
           <Input
             className="no-spinner"
-            max={1000 || 0}
+            max={1000}
             onChange={onOtherAmount}
             placeholder="300"
             ref={inputRef}

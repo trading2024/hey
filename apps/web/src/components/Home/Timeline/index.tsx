@@ -26,16 +26,12 @@ const Timeline: FC = () => {
   const { fetchAndStoreTips } = useTipsStore();
   const virtuoso = useRef<VirtuosoHandle>(null);
 
-  // Variables
   const request: FeedRequest = {
     where: {
       feedEventItemTypes: [
-        FeedEventItemType.Acted,
-        FeedEventItemType.Collect,
-        FeedEventItemType.Mirror,
         FeedEventItemType.Post,
-        FeedEventItemType.Quote,
-        FeedEventItemType.Reaction
+        FeedEventItemType.Mirror,
+        FeedEventItemType.Quote
       ],
       for: fallbackToCuratedFeed ? HEY_CURATED_ID : currentProfile?.id
     }
@@ -69,19 +65,17 @@ const Timeline: FC = () => {
   };
 
   const onEndReached = async () => {
-    if (!hasMore) {
-      return;
+    if (hasMore) {
+      const { data } = await fetchMore({
+        variables: { request: { ...request, cursor: pageInfo?.next } }
+      });
+      const ids =
+        data.feed?.items?.flatMap((p) => {
+          return [p.root.id].filter((id) => id);
+        }) || [];
+      await fetchAndStoreViews(ids);
+      await fetchAndStoreTips(ids);
     }
-
-    const { data } = await fetchMore({
-      variables: { request: { ...request, cursor: pageInfo?.next } }
-    });
-    const ids =
-      data.feed?.items?.flatMap((p) => {
-        return [p.root.id].filter((id) => id);
-      }) || [];
-    await fetchAndStoreViews(ids);
-    await fetchAndStoreTips(ids);
   };
 
   if (loading) {
@@ -115,16 +109,14 @@ const Timeline: FC = () => {
           data={feed}
           endReached={onEndReached}
           isScrolling={onScrolling}
-          itemContent={(index, feedItem) => {
-            return (
-              <SinglePublication
-                feedItem={feedItem as FeedItem}
-                isFirst={index === 0}
-                isLast={index === (feed?.length || 0) - 1}
-                publication={feedItem.root as AnyPublication}
-              />
-            );
-          }}
+          itemContent={(index, feedItem) => (
+            <SinglePublication
+              feedItem={feedItem as FeedItem}
+              isFirst={index === 0}
+              isLast={index === (feed?.length || 0) - 1}
+              publication={feedItem.root as AnyPublication}
+            />
+          )}
           ref={virtuoso}
           restoreStateFrom={
             virtuosoState.ranges.length === 0

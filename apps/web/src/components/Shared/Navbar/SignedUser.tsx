@@ -3,9 +3,7 @@ import type { FC } from 'react';
 
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/react';
 import isFeatureAvailable from '@helpers/isFeatureAvailable';
-import isFeatureEnabled from '@helpers/isFeatureEnabled';
 import { FeatureFlag } from '@hey/data/feature-flags';
-import { KillSwitch } from '@hey/data/kill-switches';
 import getAvatar from '@hey/helpers/getAvatar';
 import getLennyURL from '@hey/helpers/getLennyURL';
 import getProfile from '@hey/helpers/getProfile';
@@ -19,11 +17,8 @@ import Slug from '../Slug';
 import { NextLink } from './MenuItems';
 import MobileDrawerMenu from './MobileDrawerMenu';
 import AppVersion from './NavItems/AppVersion';
-import GardenerMode from './NavItems/GardenerMode';
-import Invites from './NavItems/Invites';
 import Logout from './NavItems/Logout';
 import OptimisticTransactions from './NavItems/OptimisticTransactions';
-import Score from './NavItems/Score';
 import Settings from './NavItems/Settings';
 import StaffMode from './NavItems/StaffMode';
 import SwitchProfile from './NavItems/SwitchProfile';
@@ -114,16 +109,6 @@ const SignedUser: FC = () => {
             >
               <Settings />
             </MenuItem>
-            {isFeatureEnabled(KillSwitch.Invites) && (
-              <MenuItem
-                as="div"
-                className={({ focus }: { focus: boolean }) =>
-                  cn({ 'dropdown-active': focus }, 'm-2 rounded-lg')
-                }
-              >
-                <Invites />
-              </MenuItem>
-            )}
             <MenuItem
               as="div"
               className={({ focus }) =>
@@ -149,19 +134,6 @@ const SignedUser: FC = () => {
             >
               <OptimisticTransactions />
             </MenuItem>
-            {isFeatureAvailable(FeatureFlag.Gardener) ? (
-              <MenuItem
-                as="div"
-                className={({ focus }) =>
-                  cn(
-                    { 'bg-yellow-100 dark:bg-yellow-800': focus },
-                    'm-2 rounded-lg'
-                  )
-                }
-              >
-                <GardenerMode />
-              </MenuItem>
-            ) : null}
             {isFeatureAvailable(FeatureFlag.Staff) ? (
               <MenuItem
                 as="div"
@@ -175,15 +147,6 @@ const SignedUser: FC = () => {
                 <StaffMode />
               </MenuItem>
             ) : null}
-            <div className="divider" />
-            <MenuItem
-              as="div"
-              className={({ focus }) =>
-                cn({ 'dropdown-active': focus }, 'm-2 rounded-lg')
-              }
-            >
-              <Score />
-            </MenuItem>
             <div className="divider" />
             <AppVersion />
           </MenuItems>

@@ -5,10 +5,8 @@ import ReportPublication from '@components/Shared/Modal/ReportPublication';
 import {
   ArrowRightCircleIcon,
   CircleStackIcon,
-  ShieldCheckIcon,
-  TicketIcon
+  ShieldCheckIcon
 } from '@heroicons/react/24/outline';
-import { APP_NAME } from '@hey/data/constants';
 import { Modal } from '@hey/ui';
 import { usePublicationAttachmentStore } from 'src/store/non-persisted/publication/usePublicationAttachmentStore';
 import { usePublicationAudioStore } from 'src/store/non-persisted/publication/usePublicationAudioStore';
@@ -21,36 +19,30 @@ import { useAccount } from 'wagmi';
 import Auth from './Auth';
 import { useSignupStore } from './Auth/Signup';
 import GlobalModalsFromUrl from './GlobalModalsFromUrl';
-import Invites from './Modal/Invites';
 import OptimisticTransactions from './Modal/OptimisticTransactions';
 import ReportProfile from './Modal/ReportProfile';
-import Score from './Modal/Score';
 import SwitchProfiles from './SwitchProfiles';
 
 const GlobalModals: FC = () => {
-  // Report modal state
   const {
     authModalType,
     reportingProfile,
     reportingPublicationId,
     setShowAuthModal,
     setShowDiscardModal,
-    setShowInvitesModal,
     setShowNewPostModal,
     setShowOptimisticTransactionsModal,
     setShowProfileSwitchModal,
     setShowPublicationReportModal,
     setShowReportProfileModal,
-    setShowScoreModal,
     showAuthModal,
-    showInvitesModal,
     showNewPostModal,
     showOptimisticTransactionsModal,
     showProfileSwitchModal,
     showPublicationReportModal,
-    showReportProfileModal,
-    showScoreModal
+    showReportProfileModal
   } = useGlobalModalStateStore();
+
   const { publicationContent, quotedPublication } = usePublicationStore();
   const { attachments, isUploading } = usePublicationAttachmentStore(
     (state) => state
@@ -61,26 +53,20 @@ const GlobalModals: FC = () => {
   const { screen: signupScreen } = useSignupStore();
   const { address } = useAccount();
 
-  const checkIfPublicationNotDrafted = () => {
-    if (
-      publicationContent === '' &&
-      quotedPublication === null &&
-      attachments.length === 0 &&
-      audioPublication.title === '' &&
-      videoThumbnail.url === '' &&
-      videoDurationInSeconds === '' &&
-      !showPollEditor &&
-      !isUploading &&
-      pollConfig.options[0] === ''
-    ) {
-      return true;
-    }
-    return false;
-  };
-  const showSignupModalTitle = signupScreen === 'choose';
+  const isPublicationDraftEmpty = () =>
+    !publicationContent &&
+    !quotedPublication &&
+    !attachments.length &&
+    !audioPublication.title &&
+    !videoThumbnail.url &&
+    !videoDurationInSeconds &&
+    !showPollEditor &&
+    !isUploading &&
+    !pollConfig.options[0];
+
   const authModalTitle =
     authModalType === 'signup'
-      ? showSignupModalTitle
+      ? signupScreen === 'choose'
         ? 'Signup'
         : null
       : 'Login';
@@ -124,7 +110,7 @@ const GlobalModals: FC = () => {
       </Modal>
       <Modal
         onClose={() => {
-          if (checkIfPublicationNotDrafted()) {
+          if (isPublicationDraftEmpty()) {
             setShowNewPostModal(false);
           } else {
             setShowDiscardModal(true);
@@ -137,28 +123,12 @@ const GlobalModals: FC = () => {
         <NewPublication />
       </Modal>
       <Modal
-        icon={<TicketIcon className="size-5" />}
-        onClose={() => setShowInvitesModal(false)}
-        show={showInvitesModal}
-        title="Invites"
-      >
-        <Invites />
-      </Modal>
-      <Modal
         icon={<CircleStackIcon className="size-5" />}
         onClose={() => setShowOptimisticTransactionsModal(false)}
         show={showOptimisticTransactionsModal}
         title="Optimistic Transactions"
       >
         <OptimisticTransactions />
-      </Modal>
-      <Modal
-        onClose={() => setShowScoreModal(false, null, null)}
-        show={showScoreModal}
-        size="xs"
-        title={`${APP_NAME} score`}
-      >
-        <Score />
       </Modal>
     </>
   );

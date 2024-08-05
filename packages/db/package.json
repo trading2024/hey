@@ -1,0 +1,25 @@
+{
+  "name": "@hey/db",
+  "version": "0.0.0",
+  "private": true,
+  "license": "AGPL-3.0",
+  "scripts": {
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --fix --ext .ts",
+    "prettier": "prettier --check \"**/*.{js,ts,tsx,md}\"  --cache",
+    "prettier:fix": "prettier --write \"**/*.{js,ts,tsx,md}\"  --cache",
+    "typecheck": "tsc --pretty"
+  },
+  "dependencies": {
+    "@clickhouse/client": "^1.4.0",
+    "dotenv": "^16.4.5",
+    "pg-promise": "^11.9.1",
+    "redis": "^4.7.0"
+  },
+  "devDependencies": {
+    "@hey/config": "workspace:*",
+    "@hey/helpers": "workspace:*",
+    "@types/node": "^22.1.0",
+    "typescript": "^5.5.4"
+  }
+}

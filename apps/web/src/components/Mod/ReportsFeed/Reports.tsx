@@ -15,7 +15,6 @@ interface ReportsProps {
 }
 
 const Reports: FC<ReportsProps> = ({ profileId, publicationId }) => {
-  // Variables
   const request: ModReportsRequest = {
     ...(profileId && { forProfile: profileId }),
     ...(publicationId && { forPublication: publicationId }),
@@ -31,13 +30,11 @@ const Reports: FC<ReportsProps> = ({ profileId, publicationId }) => {
   const hasMore = pageInfo?.next;
 
   const onEndReached = async () => {
-    if (!hasMore) {
-      return;
+    if (hasMore) {
+      await fetchMore({
+        variables: { request: { ...request, cursor: pageInfo?.next } }
+      });
     }
-
-    return await fetchMore({
-      variables: { request: { ...request, cursor: pageInfo?.next } }
-    });
   };
 
   if (loading) {
@@ -64,23 +61,18 @@ const Reports: FC<ReportsProps> = ({ profileId, publicationId }) => {
         }
         data={reports}
         endReached={onEndReached}
-        itemContent={(index, report) => {
-          return (
-            <Card>
-              <SinglePublication
-                isFirst
-                publication={report.reportedPublication as AnyPublication}
-                showActions={false}
-                showThread={false}
-              />
-              <div className="divider" />
-              <ReportDetails
-                hideViewReportsButton
-                report={report as ModReport}
-              />
-            </Card>
-          );
-        }}
+        itemContent={(_, report) => (
+          <Card>
+            <SinglePublication
+              isFirst
+              publication={report.reportedPublication as AnyPublication}
+              showActions={false}
+              showThread={false}
+            />
+            <div className="divider" />
+            <ReportDetails hideViewReportsButton report={report as ModReport} />
+          </Card>
+        )}
       />
     </div>
   );

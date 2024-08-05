@@ -48,6 +48,7 @@ model Feature {
 enum FeatureType {
   FEATURE
   PERMISSION
+  STATUS
   COHORT
   MODE
 }
@@ -115,11 +116,6 @@ model AllowedToken {
   @@index([priority])
 }
 
-model ScorableEvent {
-  eventType String @id
-  points    Int
-}
-
 model DraftPublication {
   id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   profileId     String
@@ -131,24 +127,6 @@ model DraftPublication {
   // Indexes
   @@index([profileId])
   @@index([createdAt, updatedAt])
-}
-
-model CachedProfileScore {
-  id        String   @id
-  score     Int
-  expiresAt DateTime
-}
-
-model AdjustedProfileScore {
-  profileId String
-  score     Int
-  reason    String
-  createdAt DateTime @default(now())
-
-  @@id([profileId, reason])
-  // Indexes
-  @@index([profileId])
-  @@index([createdAt])
 }
 
 model Pro {
@@ -167,4 +145,13 @@ model Tip {
   amount        Int
   txHash        String
   createdAt     DateTime @default(now())
+}
+
+model PinnedPublication {
+  id            String   @id
+  publicationId String
+  createdAt     DateTime @default(now())
+
+  // Indexes
+  @@index([publicationId])
 }

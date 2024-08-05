@@ -24,7 +24,7 @@ import toast from 'react-hot-toast';
 import useHandleWrongNetwork from 'src/hooks/useHandleWrongNetwork';
 import { useGlobalModalStateStore } from 'src/store/non-persisted/useGlobalModalStateStore';
 import { useNonceStore } from 'src/store/non-persisted/useNonceStore';
-import { useProfileRestriction } from 'src/store/non-persisted/useProfileRestriction';
+import { useProfileStatus } from 'src/store/non-persisted/useProfileStatus';
 import { useProfileStore } from 'src/store/persisted/useProfileStore';
 import { useTransactionStore } from 'src/store/persisted/useTransactionStore';
 import { useSignTypedData, useWriteContract } from 'wagmi';
@@ -32,19 +32,19 @@ import { useSignTypedData, useWriteContract } from 'wagmi';
 interface FollowProps {
   buttonClassName: string;
   profile: Profile;
-  small?: boolean;
+  small: boolean;
   title: string;
 }
 
 const Follow: FC<FollowProps> = ({
   buttonClassName,
   profile,
-  small = false,
+  small,
   title
 }) => {
   const { pathname } = useRouter();
   const { currentProfile } = useProfileStore();
-  const { isSuspended } = useProfileRestriction();
+  const { isSuspended } = useProfileStatus();
   const { incrementLensHubOnchainSigNonce, lensHubOnchainSigNonce } =
     useNonceStore();
   const { setShowAuthModal } = useGlobalModalStateStore();

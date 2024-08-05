@@ -4,15 +4,14 @@ import MetaTags from '@components/Common/MetaTags';
 import { Leafwatch } from '@helpers/leafwatch';
 import { APP_NAME } from '@hey/data/constants';
 import { PAGEVIEW } from '@hey/data/tracking';
-import { Card, GridItemEight, GridItemFour, GridLayout } from '@hey/ui';
+import { GridItemEight, GridItemFour, GridLayout } from '@hey/ui';
 import { useEffect } from 'react';
 import Custom404 from 'src/pages/404';
 import { useFeatureFlagsStore } from 'src/store/persisted/useFeatureFlagsStore';
 import { useProfileStore } from 'src/store/persisted/useProfileStore';
 
 import StaffSidebar from '../Sidebar';
-import AppRevenue from './AppRevenue';
-import PublicationStats from './PublicationStats';
+import HeyRevenue from './HeyRevenue';
 
 const Stats: NextPage = () => {
   const { currentProfile } = useProfileStore();
@@ -32,11 +31,8 @@ const Stats: NextPage = () => {
       <GridItemFour>
         <StaffSidebar />
       </GridItemFour>
-      <GridItemEight>
-        <Card>
-          <PublicationStats />
-          <AppRevenue />
-        </Card>
+      <GridItemEight className="space-y-5">
+        <HeyRevenue />
       </GridItemEight>
     </GridLayout>
   );

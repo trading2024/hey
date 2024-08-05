@@ -3,8 +3,8 @@ import logger from '@hey/helpers/logger';
 
 const sesClient = new SESClient({
   credentials: {
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
   },
   region: 'us-west-2'
 });
@@ -18,17 +18,15 @@ const sendEmail = async ({
   recipient: string;
   subject: string;
 }) => {
-  const params = {
-    Destination: { ToAddresses: [recipient] },
-    Message: {
-      Body: { Html: { Charset: 'UTF-8', Data: body } },
-      Subject: { Charset: 'UTF-8', Data: subject }
-    },
-    Source: 'no-reply@hey.xyz'
-  };
-
   try {
-    const command = new SendEmailCommand(params);
+    const command = new SendEmailCommand({
+      Destination: { ToAddresses: [recipient] },
+      Message: {
+        Body: { Html: { Charset: 'UTF-8', Data: body } },
+        Subject: { Charset: 'UTF-8', Data: subject }
+      },
+      Source: 'no-reply@hey.xyz'
+    });
     const response = await sesClient.send(command);
 
     return logger.info(

@@ -10,7 +10,7 @@ import {
   useWhoReactedPublicationQuery,
   type WhoReactedPublicationRequest
 } from '@hey/lens';
-import { Card, EmptyState, ErrorMessage } from '@hey/ui';
+import { Card, EmptyState, ErrorMessage, H5 } from '@hey/ui';
 import Link from 'next/link';
 import { Virtuoso } from 'react-virtuoso';
 import { useProfileStore } from 'src/store/persisted/useProfileStore';
@@ -22,7 +22,6 @@ interface LikesProps {
 const Likes: FC<LikesProps> = ({ publicationId }) => {
   const { currentProfile } = useProfileStore();
 
-  // Variables
   const request: WhoReactedPublicationRequest = {
     for: publicationId,
     limit: LimitType.TwentyFive
@@ -38,13 +37,11 @@ const Likes: FC<LikesProps> = ({ publicationId }) => {
   const hasMore = pageInfo?.next;
 
   const onEndReached = async () => {
-    if (!hasMore) {
-      return;
+    if (hasMore) {
+      await fetchMore({
+        variables: { request: { ...request, cursor: pageInfo?.next } }
+      });
     }
-
-    await fetchMore({
-      variables: { request: { ...request, cursor: pageInfo?.next } }
-    });
   };
 
   if (loading) {
@@ -78,7 +75,7 @@ const Likes: FC<LikesProps> = ({ publicationId }) => {
         <Link href={`/posts/${publicationId}`}>
           <ArrowLeftIcon className="size-5" />
         </Link>
-        <b className="text-lg">Liked by</b>
+        <H5>Liked by</H5>
       </div>
       <div className="divider" />
       <Virtuoso
@@ -86,20 +83,18 @@ const Likes: FC<LikesProps> = ({ publicationId }) => {
         computeItemKey={(index, like) => `${like.profile.id}-${index}`}
         data={profiles}
         endReached={onEndReached}
-        itemContent={(_, like) => {
-          return (
-            <div className="p-5">
-              <UserProfile
-                hideFollowButton={currentProfile?.id === like.profile.id}
-                hideUnfollowButton={currentProfile?.id === like.profile.id}
-                profile={like.profile as Profile}
-                showBio
-                showUserPreview={false}
-                source={ProfileLinkSource.Likes}
-              />
-            </div>
-          );
-        }}
+        itemContent={(_, like) => (
+          <div className="p-5">
+            <UserProfile
+              hideFollowButton={currentProfile?.id === like.profile.id}
+              hideUnfollowButton={currentProfile?.id === like.profile.id}
+              profile={like.profile as Profile}
+              showBio
+              showUserPreview={false}
+              source={ProfileLinkSource.Likes}
+            />
+          </div>
+        )}
         useWindowScroll
       />
     </Card>

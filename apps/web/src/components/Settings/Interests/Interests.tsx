@@ -17,14 +17,14 @@ import {
 import { useApolloClient } from '@hey/lens/apollo';
 import { Button } from '@hey/ui';
 import toast from 'react-hot-toast';
-import { useProfileRestriction } from 'src/store/non-persisted/useProfileRestriction';
+import { useProfileStatus } from 'src/store/non-persisted/useProfileStatus';
 import { useProfileStore } from 'src/store/persisted/useProfileStore';
 
 const MAX_TOPICS_ALLOWED = 12;
 
 const Interests: FC = () => {
   const { currentProfile } = useProfileStore();
-  const { isSuspended } = useProfileRestriction();
+  const { isSuspended } = useProfileStatus();
   const { cache } = useApolloClient();
 
   const updateCache = (interests: string[]) => {
@@ -108,11 +108,6 @@ const Interests: FC = () => {
                   }
                   outline
                   size="sm"
-                  variant={
-                    selectedTopics.includes(subCategory.id)
-                      ? 'primary'
-                      : 'secondary'
-                  }
                 >
                   <div>{subCategory.label}</div>
                 </Button>
@@ -137,11 +132,6 @@ const Interests: FC = () => {
                   }
                   outline
                   size="sm"
-                  variant={
-                    selectedTopics.includes(category.id)
-                      ? 'primary'
-                      : 'secondary'
-                  }
                 >
                   <div>{category.label}</div>
                 </Button>

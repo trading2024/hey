@@ -26,13 +26,13 @@ import toast from 'react-hot-toast';
 import { Virtuoso } from 'react-virtuoso';
 import useHandleWrongNetwork from 'src/hooks/useHandleWrongNetwork';
 import { useNonceStore } from 'src/store/non-persisted/useNonceStore';
-import { useProfileRestriction } from 'src/store/non-persisted/useProfileRestriction';
+import { useProfileStatus } from 'src/store/non-persisted/useProfileStatus';
 import { useProfileStore } from 'src/store/persisted/useProfileStore';
 import { useSignTypedData, useWriteContract } from 'wagmi';
 
 const List: FC = () => {
   const { currentProfile } = useProfileStore();
-  const { isSuspended } = useProfileRestriction();
+  const { isSuspended } = useProfileStatus();
   const { incrementLensHubOnchainSigNonce, lensHubOnchainSigNonce } =
     useNonceStore();
   const [removingAddress, setRemovingAddress] = useState<Address | null>(null);
@@ -151,13 +151,11 @@ const List: FC = () => {
   const hasMore = pageInfo?.next;
 
   const onEndReached = async () => {
-    if (!hasMore) {
-      return;
+    if (hasMore) {
+      await fetchMore({
+        variables: { request: { ...request, cursor: pageInfo?.next } }
+      });
     }
-
-    return await fetchMore({
-      variables: { request: { ...request, cursor: pageInfo?.next } }
-    });
   };
 
   if (loading) {
@@ -185,27 +183,25 @@ const List: FC = () => {
       computeItemKey={(index, manager) => `${manager.address}-${index}`}
       data={profileManagers}
       endReached={onEndReached}
-      itemContent={(_, manager) => {
-        return (
-          <div className="flex items-center justify-between py-2">
-            <WalletProfile address={manager.address} />
-            <Button
-              disabled={removingAddress === manager.address}
-              icon={
-                removingAddress === manager.address ? (
-                  <Spinner size="xs" />
-                ) : (
-                  <MinusCircleIcon className="size-4" />
-                )
-              }
-              onClick={() => removeManager(manager.address)}
-              outline
-            >
-              Remove
-            </Button>
-          </div>
-        );
-      }}
+      itemContent={(_, manager) => (
+        <div className="flex items-center justify-between py-2">
+          <WalletProfile address={manager.address} />
+          <Button
+            disabled={removingAddress === manager.address}
+            icon={
+              removingAddress === manager.address ? (
+                <Spinner size="xs" />
+              ) : (
+                <MinusCircleIcon className="size-4" />
+              )
+            }
+            onClick={() => removeManager(manager.address)}
+            outline
+          >
+            Remove
+          </Button>
+        </div>
+      )}
       useWindowScroll
     />
   );

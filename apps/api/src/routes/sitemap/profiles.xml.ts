@@ -1,9 +1,9 @@
 import type { Handler } from 'express';
 
+import lensPg from '@hey/db/lensPg';
 import logger from '@hey/helpers/logger';
-import lensPg from 'src/db/lensPg';
 import catchedError from 'src/helpers/catchedError';
-import { SITEMAP_BATCH_SIZE } from 'src/helpers/constants';
+import { CACHE_AGE_1_DAY, SITEMAP_BATCH_SIZE } from 'src/helpers/constants';
 import { buildSitemapXml } from 'src/helpers/sitemap/buildSitemap';
 
 export const get: Handler = async (req, res) => {
@@ -27,10 +27,14 @@ export const get: Handler = async (req, res) => {
     const xml = buildSitemapXml(entries);
 
     logger.info(
-      `Lens: Fetched all profiles sitemap index having ${totalBatches} batches from user-agent: ${user_agent}`
+      `[Lens] Fetched all profiles sitemap index having ${totalBatches} batches from user-agent: ${user_agent}`
     );
 
-    return res.status(200).setHeader('Content-Type', 'text/xml').send(xml);
+    return res
+      .status(200)
+      .setHeader('Content-Type', 'text/xml')
+      .setHeader('Cache-Control', CACHE_AGE_1_DAY)
+      .send(xml);
   } catch (error) {
     return catchedError(res, error);
   }

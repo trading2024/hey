@@ -9,7 +9,6 @@ import Loader from '@components/Shared/Loader';
 import P2PRecommendation from '@components/Shared/Profile/P2PRecommendation';
 import UserProfile from '@components/Shared/UserProfile';
 import { ArrowPathIcon, UsersIcon } from '@heroicons/react/24/outline';
-import { SUPER_ADMIN } from '@hey/data/constants';
 import getProfile from '@hey/helpers/getProfile';
 import {
   ExploreProfilesOrderByType,
@@ -24,14 +23,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useEffect, useState } from 'react';
 import { Virtuoso } from 'react-virtuoso';
-import { useProfileStore } from 'src/store/persisted/useProfileStore';
 
-import LoadScore from './LoadScore';
 import ViewReports from './ViewReports';
 
 const List: FC = () => {
   const { pathname } = useRouter();
-  const { currentProfile } = useProfileStore();
   const [orderBy, setOrderBy] = useState<ExploreProfilesOrderByType>(
     ExploreProfilesOrderByType.LatestCreated
   );
@@ -39,7 +35,6 @@ const List: FC = () => {
   const [refetching, setRefetching] = useState(false);
   const debouncedSearchText = useDebounce<string>(searchText, 500);
 
-  // Variables
   const request: ExploreProfilesRequest = {
     limit: LimitType.Fifty,
     orderBy
@@ -54,7 +49,6 @@ const List: FC = () => {
 
   useEffect(() => {
     if (debouncedSearchText) {
-      // Variables
       const request: ProfileSearchRequest = {
         limit: LimitType.Ten,
         query: debouncedSearchText
@@ -77,13 +71,11 @@ const List: FC = () => {
       return;
     }
 
-    if (!hasMore) {
-      return;
+    if (hasMore) {
+      await fetchMore({
+        variables: { request: { ...request, cursor: pageInfo?.next } }
+      });
     }
-
-    await fetchMore({
-      variables: { request: { ...request, cursor: pageInfo?.next } }
-    });
   };
 
   const onRefetch = async () => {
@@ -141,38 +133,33 @@ const List: FC = () => {
             computeItemKey={(index, profile) => `${profile.id}-${index}`}
             data={profiles}
             endReached={onEndReached}
-            itemContent={(_, profile) => {
-              return (
-                <div className="flex flex-wrap items-center justify-between gap-y-5 pb-7">
-                  <Link
-                    href={
-                      pathname === '/mod'
-                        ? getProfile(profile as Profile).link
-                        : getProfile(profile as Profile).staffLink
-                    }
-                  >
-                    {currentProfile?.id === SUPER_ADMIN ? (
-                      <LoadScore profileId={profile.id} />
-                    ) : null}
-                    <UserProfile
-                      hideFollowButton
-                      hideUnfollowButton
-                      isBig
-                      linkToProfile={false}
-                      profile={profile as Profile}
-                      showBio={false}
-                      showId
-                      showUserPreview={false}
-                      timestamp={profile.createdAt}
-                    />
-                  </Link>
-                  <div className="flex space-x-3">
-                    <ViewReports id={profile.id} />
-                    <P2PRecommendation profile={profile as Profile} />
-                  </div>
+            itemContent={(_, profile) => (
+              <div className="flex flex-wrap items-center justify-between gap-y-5 pb-7">
+                <Link
+                  href={
+                    pathname === '/mod'
+                      ? getProfile(profile as Profile).link
+                      : getProfile(profile as Profile).staffLink
+                  }
+                >
+                  <UserProfile
+                    hideFollowButton
+                    hideUnfollowButton
+                    isBig
+                    linkToProfile={false}
+                    profile={profile as Profile}
+                    showBio={false}
+                    showId
+                    showUserPreview={false}
+                    timestamp={profile.createdAt}
+                  />
+                </Link>
+                <div className="flex space-x-3">
+                  <ViewReports id={profile.id} />
+                  <P2PRecommendation profile={profile as Profile} />
                 </div>
-              );
-            }}
+              </div>
+            )}
             useWindowScroll
           />
         )}

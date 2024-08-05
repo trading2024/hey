@@ -5,7 +5,7 @@ import ProfileListShimmer from '@components/Shared/Shimmer/ProfileListShimmer';
 import UserProfile from '@components/Shared/UserProfile';
 import { ArrowLeftIcon, UsersIcon } from '@heroicons/react/24/outline';
 import { LimitType, useMutualFollowersQuery } from '@hey/lens';
-import { Card, EmptyState, ErrorMessage } from '@hey/ui';
+import { Card, EmptyState, ErrorMessage, H5 } from '@hey/ui';
 import Link from 'next/link';
 import { Virtuoso } from 'react-virtuoso';
 import { useProfileStore } from 'src/store/persisted/useProfileStore';
@@ -21,7 +21,6 @@ const MutualFollowersList: FC<MutualFollowersListProps> = ({
 }) => {
   const { currentProfile } = useProfileStore();
 
-  // Variables
   const request: MutualFollowersRequest = {
     limit: LimitType.TwentyFive,
     observer: currentProfile?.id,
@@ -38,13 +37,11 @@ const MutualFollowersList: FC<MutualFollowersListProps> = ({
   const hasMore = pageInfo?.next;
 
   const onEndReached = async () => {
-    if (!hasMore) {
-      return;
+    if (hasMore) {
+      await fetchMore({
+        variables: { request: { ...request, cursor: pageInfo?.next } }
+      });
     }
-
-    await fetchMore({
-      variables: { request: { ...request, cursor: pageInfo?.next } }
-    });
   };
 
   if (loading) {
@@ -81,7 +78,7 @@ const MutualFollowersList: FC<MutualFollowersListProps> = ({
         <Link href={`/u/${handle}`}>
           <ArrowLeftIcon className="size-5" />
         </Link>
-        <b className="text-lg">Mutual Followers</b>
+        <H5>Mutual Followers</H5>
       </div>
       <div className="divider" />
       <Virtuoso
@@ -91,19 +88,17 @@ const MutualFollowersList: FC<MutualFollowersListProps> = ({
         }
         data={mutualFollowers}
         endReached={onEndReached}
-        itemContent={(_, mutualFollower) => {
-          return (
-            <div className="p-5">
-              <UserProfile
-                hideFollowButton={currentProfile?.id === mutualFollower.id}
-                hideUnfollowButton={currentProfile?.id === mutualFollower.id}
-                profile={mutualFollower as Profile}
-                showBio
-                showUserPreview={false}
-              />
-            </div>
-          );
-        }}
+        itemContent={(_, mutualFollower) => (
+          <div className="p-5">
+            <UserProfile
+              hideFollowButton={currentProfile?.id === mutualFollower.id}
+              hideUnfollowButton={currentProfile?.id === mutualFollower.id}
+              profile={mutualFollower as Profile}
+              showBio
+              showUserPreview={false}
+            />
+          </div>
+        )}
         useWindowScroll
       />
     </Card>

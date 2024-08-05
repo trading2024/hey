@@ -47,12 +47,12 @@ const MetaTags: FC<MetaTagsProps> = ({
       <meta content="400" property="twitter:image:height" />
       <meta content="heydotxyz" property="twitter:creator" />
 
-      {creator ? (
+      {creator && (
         <>
           <meta content={creator} property="creator" />
           <meta content={creator} property="publisher" />
         </>
-      ) : null}
+      )}
 
       <link
         href="/opensearch.xml"
@@ -69,15 +69,6 @@ const MetaTags: FC<MetaTagsProps> = ({
       <link href="/ati.png" rel="apple-touch-icon" sizes="180x180" />
       <link href="/32x32.png" rel="icon" sizes="32x32" type="image/png" />
       <link href="/16x16.png" rel="icon" sizes="16x16" type="image/png" />
-
-      {/* PWA config */}
-      <link href="/manifest.json" rel="manifest" />
-      <meta content="Hey" name="application-name" />
-      <meta content="Hey" name="apple-mobile-web-app-title" />
-      <meta content="yes" name="mobile-web-app-capable" />
-      <meta content="yes" name="apple-mobile-web-app-capable" />
-      <meta content="default" name="apple-mobile-web-app-status-bar-style" />
-      <meta content="#ffffff" name="theme-color" />
     </Head>
   );
 };

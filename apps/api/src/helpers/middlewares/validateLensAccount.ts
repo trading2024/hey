@@ -1,50 +1,57 @@
-import type { Request } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 
-import LensEndpoint from '@hey/data/lens-endpoints';
-import axios from 'axios';
+import { Errors } from '@hey/data';
+import lensPg from '@hey/db/lensPg';
+import { getRedis, setRedis } from '@hey/db/redisClient';
+import parseJwt from '@hey/helpers/parseJwt';
+
+import catchedError from '../catchedError';
 
 /**
- * Middleware to validate Lens access token
- * @param request Incoming request
- * @returns Response
+ * Middleware to validate Lens account
+ * @param req Incoming request
+ * @param res Response
+ * @param next Next function
  */
 const validateLensAccount = async (
-  request: Request
-): Promise<200 | 400 | 401 | 500> => {
-  const accessToken = request.headers['x-access-token'] as string;
-  const network = request.headers['x-lens-network'] as string;
-  const allowedNetworks = ['mainnet', 'testnet'];
-
-  if (!accessToken || !network || !allowedNetworks.includes(network)) {
-    return 400;
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const identityToken = req.headers['x-identity-token'] as string;
+  if (!identityToken) {
+    return catchedError(res, new Error(Errors.Unauthorized), 401);
   }
 
-  const isMainnet = network === 'mainnet';
   try {
-    const { data } = await axios.post(
-      isMainnet ? LensEndpoint.Mainnet : LensEndpoint.Testnet,
-      {
-        query: `
-          query Verify {
-            verify(request: { accessToken: "${accessToken}" })
-          }
-        `
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-          'User-agent': 'Hey.xyz'
-        }
-      }
-    );
+    const payload = parseJwt(identityToken);
+    const cacheKey = `auth:${payload.id}`;
+    const cachedData = await getRedis(cacheKey);
 
-    if (data.data.verify) {
-      return 200;
+    if (cachedData) {
+      return next();
     }
 
-    return 401;
+    const data = await lensPg.query(
+      `
+        SELECT EXISTS (
+          SELECT 1 FROM authentication.record
+          WHERE profile_id = $1
+          AND authorization_id = $2
+          LIMIT 1
+        ) AS result;
+      `,
+      [payload.id, payload.authorizationId]
+    );
+
+    if (data[0]?.result) {
+      await setRedis(cacheKey, payload.authorizationId);
+      return next();
+    }
+
+    return catchedError(res, new Error(Errors.Unauthorized), 401);
   } catch {
-    return 500;
+    return catchedError(res, new Error(Errors.SomethingWentWrong));
   }
 };
 

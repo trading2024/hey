@@ -1,17 +1,17 @@
-const hre = require('hardhat');
+import hre from 'hardhat';
 
 async function deployProxy() {
   const owner = '0x03Ba34f6Ea1496fa316873CF8350A3f7eaD317EF';
   const feesBps = '500'; // 5%
 
   const HeyTipping = await hre.ethers.getContractFactory('HeyTipping');
-  const deployProxy = await hre.upgrades.deployProxy(HeyTipping, [
+  const deployProxy = await hre.upgrades.deployProxy(HeyTipping as any, [
     owner,
     feesBps
   ]);
-  await deployProxy.waitForDeployment();
+  await deployProxy.deployed();
 
-  console.log(`HeyTipping deployed to ${await deployProxy.getAddress()}`);
+  console.log(`HeyTipping deployed to ${await deployProxy.address}`);
 }
 
 deployProxy().catch((error) => {

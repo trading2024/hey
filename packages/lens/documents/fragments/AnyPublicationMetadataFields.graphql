@@ -1,15 +1,12 @@
 fragment AnyPublicationMetadataFields on PublicationMetadata {
   ... on VideoMetadataV3 {
-  ...VideoMetadataV3Fields
+    ...VideoMetadataV3Fields
   }
   ... on ArticleMetadataV3 {
     ...ArticleMetadataV3Fields
   }
   ... on AudioMetadataV3 {
     ...AudioMetadataV3Fields
-  }
-  ... on EmbedMetadataV3 {
-    ...EmbedMetadataV3Fields
   }
   ... on ImageMetadataV3 {
     ...ImageMetadataV3Fields

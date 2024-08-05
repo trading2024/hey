@@ -1,30 +1,30 @@
-import type { Request } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 
+import { Errors } from '@hey/data';
+import heyPg from '@hey/db/heyPg';
 import parseJwt from '@hey/helpers/parseJwt';
-import heyPg from 'src/db/heyPg';
 
+import catchedError from '../catchedError';
 import { STAFF_FEATURE_ID } from '../constants';
-import validateLensAccount from './validateLensAccount';
 
 /**
  * Middleware to validate if the profile is staff
- * @param request Incoming request
- * @returns Response
+ * @param req Incoming request
+ * @param res Response
+ * @param next Next function
  */
-const validateIsStaff = async (request: Request) => {
-  const validateLensAccountStatus = await validateLensAccount(request);
-  if (validateLensAccountStatus !== 200) {
-    return validateLensAccountStatus;
+const validateIsStaff = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const identityToken = req.headers['x-identity-token'] as string;
+  if (!identityToken) {
+    return catchedError(res, new Error(Errors.Unauthorized), 401);
   }
 
   try {
-    const accessToken = request.headers['x-access-token'] as string;
-
-    if (!accessToken) {
-      return 400;
-    }
-
-    const payload = parseJwt(accessToken);
+    const payload = parseJwt(identityToken);
     const data = await heyPg.query(
       `
         SELECT enabled
@@ -38,12 +38,12 @@ const validateIsStaff = async (request: Request) => {
     );
 
     if (data[0]?.enabled) {
-      return 200;
+      return next();
     }
 
-    return 401;
+    return catchedError(res, new Error(Errors.Unauthorized), 401);
   } catch {
-    return 500;
+    return catchedError(res, new Error(Errors.SomethingWentWrong));
   }
 };
 

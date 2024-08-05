@@ -1,5 +1,6 @@
 import type { FC, ReactNode } from 'react';
 
+import { H6 } from '@hey/ui';
 import cn from '@hey/ui/cn';
 import { toast } from 'react-hot-toast';
 
@@ -17,33 +18,35 @@ const MetaDetails: FC<MetaDetailsProps> = ({
   noFlex = false,
   title,
   value
-}) => (
-  <div
-    className={cn(
-      !noFlex && 'flex items-center gap-1',
-      value && 'cursor-pointer',
-      'linkify text-sm font-bold'
-    )}
-    onClick={async () => {
-      if (!value) {
-        return;
-      }
-
+}) => {
+  const handleClick = async () => {
+    if (value) {
       await navigator.clipboard.writeText(value);
       toast.success('Copied to clipboard!');
-    }}
-  >
-    <div className="flex items-center gap-1">
-      {icon}
-      {title ? (
-        <div className="ld-text-gray-500">
-          {title}
-          {noFlex ? '' : ':'}
-        </div>
-      ) : null}
+    }
+  };
+
+  return (
+    <div
+      className={cn(
+        !noFlex && 'flex items-center gap-1',
+        value && 'cursor-pointer',
+        'linkify'
+      )}
+      onClick={handleClick}
+    >
+      <H6 className="flex items-center gap-1">
+        {icon}
+        {title && (
+          <div className="ld-text-gray-500">
+            {title}
+            {!noFlex && ':'}
+          </div>
+        )}
+      </H6>
+      <H6 className={noFlex ? 'mt-1' : ''}>{children}</H6>
     </div>
-    <div className={cn(noFlex ? 'mt-1' : '')}>{children}</div>
-  </div>
-);
+  );
+};
 
 export default MetaDetails;

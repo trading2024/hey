@@ -33,22 +33,14 @@ const Links: FC = () => {
             link="https://railway.app/project/659c7f82-0d18-4593-807f-5348c495e3ef/logs"
             title="Live Railway Logs"
           />
-          <ListItem
-            link="https://heyverse.sentry.io/issues/?project=4506721358512128"
-            title="Sentry Errors"
-          />
         </ul>
       </div>
       <div>
         <p className="mb-4 font-bold">Other helpful links 🌱</p>
         <ul className="mb-3 mt-0 list-disc space-y-1 pl-5">
           <ListItem
-            link="https://app.lemonsqueezy.com/dashboard"
-            title="Lemon Squeezy"
-          />
-          <ListItem
-            link="https://app.crisp.chat/website/37355035-47aa-4f42-ad47-cffc3d1fea16/inbox"
-            title="Crisp Tickets"
+            link="https://desk.zoho.in/agent/heyverse/hey/tickets/list/all-cases"
+            title="Support Tickets"
           />
           <ListItem
             link="https://railway.app/project/659c7f82-0d18-4593-807f-5348c495e3ef"

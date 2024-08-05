@@ -1,18 +1,6 @@
 query LatestPaidActions($request: PaginatedRequest!) {
   latestPaidActions(request: $request) {
     items {
-      ... on FollowPaidAction {
-        followed {
-          ...ProfileFields
-        }
-        latestActed {
-          actedAt
-          profile {
-            ...ProfileFields
-          }
-          txHash
-        }
-      }
       ... on OpenActionPaidAction {
         actedOn {
           ... on Post {
@@ -28,9 +16,8 @@ query LatestPaidActions($request: PaginatedRequest!) {
         latestActed {
           actedAt
           profile {
-            ...ProfileFields
+            ...PublicationProfileFields
           }
-          txHash
         }
       }
     }

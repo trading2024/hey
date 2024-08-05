@@ -11,10 +11,7 @@ import { Virtuoso } from 'react-virtuoso';
 import OpenActionPaidAction from './OpenActionPaidAction';
 
 const PaidActions: FC = () => {
-  // Variables
-  const request: PaginatedRequest = {
-    limit: LimitType.TwentyFive
-  };
+  const request: PaginatedRequest = { limit: LimitType.TwentyFive };
 
   const { data, error, fetchMore, loading } = useLatestPaidActionsQuery({
     variables: { request }
@@ -25,13 +22,11 @@ const PaidActions: FC = () => {
   const hasMore = pageInfo?.next;
 
   const onEndReached = async () => {
-    if (!hasMore) {
-      return;
+    if (hasMore) {
+      await fetchMore({
+        variables: { request: { ...request, cursor: pageInfo?.next } }
+      });
     }
-
-    return await fetchMore({
-      variables: { request: { ...request, cursor: pageInfo?.next } }
-    });
   };
 
   if (loading) {
@@ -62,7 +57,7 @@ const PaidActions: FC = () => {
       }
       data={actions}
       endReached={onEndReached}
-      itemContent={(index, action) => {
+      itemContent={(_, action) => {
         return action.__typename === 'OpenActionPaidAction' ? (
           <Card>
             <OpenActionPaidAction

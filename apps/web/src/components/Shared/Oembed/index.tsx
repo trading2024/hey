@@ -11,6 +11,7 @@ import { useEffect, useState } from 'react';
 
 import Embed from './Embed';
 import EmptyOembed from './EmptyOembed';
+import Frame from './Frames';
 import Player from './Player';
 
 interface OembedProps {
@@ -65,6 +66,7 @@ const Oembed: FC<OembedProps> = ({ onLoad, publication, url }) => {
   const og: OG = {
     description: data?.description,
     favicon: getFavicon(data.url),
+    frame: data?.frame,
     html: data?.html,
     image: data?.image,
     nft: data?.nft,
@@ -73,12 +75,16 @@ const Oembed: FC<OembedProps> = ({ onLoad, publication, url }) => {
     url: url as string
   };
 
-  if (!og.title && !og.html) {
+  if (!og.title && !og.html && !og.frame) {
     return null;
   }
 
   if (og.html) {
     return <Player og={og} />;
+  }
+
+  if (og.frame) {
+    return <Frame frame={og.frame} publicationId={currentPublication?.id} />;
   }
 
   return <Embed og={og} publicationId={currentPublication?.id} />;

@@ -2,10 +2,8 @@ import type { Profile } from '@hey/lens';
 import type { FC } from 'react';
 
 import isFeatureAvailable from '@helpers/isFeatureAvailable';
-import isFeatureEnabled from '@helpers/isFeatureEnabled';
 import { XMarkIcon } from '@heroicons/react/24/outline';
 import { FeatureFlag } from '@hey/data/feature-flags';
-import { KillSwitch } from '@hey/data/kill-switches';
 import getAvatar from '@hey/helpers/getAvatar';
 import getLennyURL from '@hey/helpers/getLennyURL';
 import getProfile from '@hey/helpers/getProfile';
@@ -18,8 +16,6 @@ import { useProfileStore } from 'src/store/persisted/useProfileStore';
 import Slug from '../Slug';
 import AppVersion from './NavItems/AppVersion';
 import Bookmarks from './NavItems/Bookmarks';
-import GardenerMode from './NavItems/GardenerMode';
-import Invites from './NavItems/Invites';
 import Logout from './NavItems/Logout';
 import Settings from './NavItems/Settings';
 import StaffMode from './NavItems/StaffMode';
@@ -87,9 +83,6 @@ const MobileDrawerMenu: FC = () => {
               className={cn(itemClass, 'px-4')}
               onClick={closeDrawer}
             />
-            {isFeatureEnabled(KillSwitch.Invites) && (
-              <Invites className={cn(itemClass, 'px-4')} />
-            )}
             <ThemeSwitch
               className={cn(itemClass, 'px-4')}
               onClick={closeDrawer}
@@ -99,7 +92,7 @@ const MobileDrawerMenu: FC = () => {
         </div>
         <div className="bg-white dark:bg-gray-900">
           <div className="divider" />
-          <Support className={cn(itemClass, 'px-4')} onClick={closeDrawer} />
+          <Support className={cn(itemClass, 'px-4')} />
           <div className="divider" />
         </div>
 
@@ -112,17 +105,6 @@ const MobileDrawerMenu: FC = () => {
             />
           </div>
           <div className="divider" />
-          {isFeatureAvailable(FeatureFlag.Gardener) ? (
-            <>
-              <div
-                className="hover:bg-gray-200 dark:hover:bg-gray-800"
-                onClick={closeDrawer}
-              >
-                <GardenerMode className={cn(itemClass, 'px-4 py-3')} />
-              </div>
-              <div className="divider" />
-            </>
-          ) : null}
           {isFeatureAvailable(FeatureFlag.Staff) ? (
             <>
               <div

@@ -3,14 +3,14 @@ import type { FC } from 'react';
 
 import ProfileListShimmer from '@components/Shared/Shimmer/ProfileListShimmer';
 import UserProfile from '@components/Shared/UserProfile';
-import { ArrowLeftIcon, RectangleStackIcon } from '@heroicons/react/24/outline';
+import { ArrowLeftIcon, ShoppingBagIcon } from '@heroicons/react/24/outline';
 import { ProfileLinkSource } from '@hey/data/tracking';
 import {
   LimitType,
   OpenActionCategoryType,
   useWhoActedOnPublicationQuery
 } from '@hey/lens';
-import { Card, EmptyState, ErrorMessage } from '@hey/ui';
+import { Card, EmptyState, ErrorMessage, H5 } from '@hey/ui';
 import Link from 'next/link';
 import { Virtuoso } from 'react-virtuoso';
 import { useProfileStore } from 'src/store/persisted/useProfileStore';
@@ -22,7 +22,6 @@ interface CollectorsProps {
 const Collectors: FC<CollectorsProps> = ({ publicationId }) => {
   const { currentProfile } = useProfileStore();
 
-  // Variables
   const request: WhoActedOnPublicationRequest = {
     limit: LimitType.TwentyFive,
     on: publicationId,
@@ -39,13 +38,11 @@ const Collectors: FC<CollectorsProps> = ({ publicationId }) => {
   const hasMore = pageInfo?.next;
 
   const onEndReached = async () => {
-    if (!hasMore) {
-      return;
+    if (hasMore) {
+      await fetchMore({
+        variables: { request: { ...request, cursor: pageInfo?.next } }
+      });
     }
-
-    await fetchMore({
-      variables: { request: { ...request, cursor: pageInfo?.next } }
-    });
   };
 
   if (loading) {
@@ -56,7 +53,7 @@ const Collectors: FC<CollectorsProps> = ({ publicationId }) => {
     return (
       <div className="p-5">
         <EmptyState
-          icon={<RectangleStackIcon className="size-8" />}
+          icon={<ShoppingBagIcon className="size-8" />}
           message="No collectors."
         />
       </div>
@@ -79,7 +76,7 @@ const Collectors: FC<CollectorsProps> = ({ publicationId }) => {
         <Link href={`/posts/${publicationId}`}>
           <ArrowLeftIcon className="size-5" />
         </Link>
-        <b className="text-lg">Collected by</b>
+        <H5>Collected by</H5>
       </div>
       <div className="divider" />
       <Virtuoso
@@ -87,20 +84,18 @@ const Collectors: FC<CollectorsProps> = ({ publicationId }) => {
         computeItemKey={(index, profile) => `${profile.id}-${index}`}
         data={profiles}
         endReached={onEndReached}
-        itemContent={(_, profile) => {
-          return (
-            <div className="p-5">
-              <UserProfile
-                hideFollowButton={currentProfile?.id === profile.id}
-                hideUnfollowButton={currentProfile?.id === profile.id}
-                profile={profile as Profile}
-                showBio
-                showUserPreview={false}
-                source={ProfileLinkSource.Collects}
-              />
-            </div>
-          );
-        }}
+        itemContent={(_, profile) => (
+          <div className="p-5">
+            <UserProfile
+              hideFollowButton={currentProfile?.id === profile.id}
+              hideUnfollowButton={currentProfile?.id === profile.id}
+              profile={profile as Profile}
+              showBio
+              showUserPreview={false}
+              source={ProfileLinkSource.Collects}
+            />
+          </div>
+        )}
         useWindowScroll
       />
     </Card>

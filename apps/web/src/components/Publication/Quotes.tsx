@@ -8,7 +8,7 @@ import {
   ChatBubbleBottomCenterTextIcon
 } from '@heroicons/react/24/outline';
 import { CustomFiltersType, LimitType, usePublicationsQuery } from '@hey/lens';
-import { Card, EmptyState, ErrorMessage } from '@hey/ui';
+import { Card, EmptyState, ErrorMessage, H5 } from '@hey/ui';
 import Link from 'next/link';
 import { Virtuoso } from 'react-virtuoso';
 import { useImpressionsStore } from 'src/store/non-persisted/useImpressionsStore';
@@ -22,7 +22,6 @@ const Quotes: FC<QuotesProps> = ({ publicationId }) => {
   const { fetchAndStoreViews } = useImpressionsStore();
   const { fetchAndStoreTips } = useTipsStore();
 
-  // Variables
   const request: PublicationsRequest = {
     limit: LimitType.TwentyFive,
     where: {
@@ -46,16 +45,14 @@ const Quotes: FC<QuotesProps> = ({ publicationId }) => {
   const hasMore = pageInfo?.next;
 
   const onEndReached = async () => {
-    if (!hasMore) {
-      return;
+    if (hasMore) {
+      const { data } = await fetchMore({
+        variables: { request: { ...request, cursor: pageInfo?.next } }
+      });
+      const ids = data?.publications?.items?.map((p) => p.id) || [];
+      await fetchAndStoreViews(ids);
+      await fetchAndStoreTips(ids);
     }
-
-    const { data } = await fetchMore({
-      variables: { request: { ...request, cursor: pageInfo?.next } }
-    });
-    const ids = data?.publications?.items?.map((p) => p.id) || [];
-    await fetchAndStoreViews(ids);
-    await fetchAndStoreTips(ids);
   };
 
   if (loading) {
@@ -81,7 +78,7 @@ const Quotes: FC<QuotesProps> = ({ publicationId }) => {
         <Link href={`/posts/${publicationId}`}>
           <ArrowLeftIcon className="size-5" />
         </Link>
-        <b className="text-lg">Quotes</b>
+        <H5>Quotes</H5>
       </div>
       <div className="divider" />
       <Virtuoso
@@ -89,16 +86,14 @@ const Quotes: FC<QuotesProps> = ({ publicationId }) => {
         computeItemKey={(index, quote) => `${quote.id}-${index}`}
         data={quotes}
         endReached={onEndReached}
-        itemContent={(index, quote) => {
-          return (
-            <SinglePublication
-              isFirst={false}
-              isLast={index === quotes.length - 1}
-              publication={quote as Quote}
-              showType={false}
-            />
-          );
-        }}
+        itemContent={(index, quote) => (
+          <SinglePublication
+            isFirst={false}
+            isLast={index === quotes.length - 1}
+            publication={quote as Quote}
+            showType={false}
+          />
+        )}
         useWindowScroll
       />
     </Card>

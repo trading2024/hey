@@ -1,6 +1,7 @@
 fragment LinkMetadataV3Fields on LinkMetadataV3 {
   id
-  rawURI
+  content
+  sharingLink
   tags
   attributes {
     ...MetadataAttributeFields
@@ -8,10 +9,4 @@ fragment LinkMetadataV3Fields on LinkMetadataV3 {
   attachments {
     ...PublicationMetadataMediaFields
   }
-  content
-  sharingLink
-  encryptedWith {
-    ...PublicationMetadataLitEncryptionFields
-  }
-  appId
 }

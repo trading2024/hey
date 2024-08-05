@@ -2,7 +2,7 @@ import type { Profile } from '@hey/lens';
 import type { FC } from 'react';
 
 import ToggleWrapper from '@components/Staff/Users/Overview/Tool/ToggleWrapper';
-import getAuthApiHeaders from '@helpers/getAuthApiHeaders';
+import { getAuthApiHeaders } from '@helpers/getAuthApiHeaders';
 import { Leafwatch } from '@helpers/leafwatch';
 import {
   HEY_API_URL,
@@ -11,7 +11,7 @@ import {
 } from '@hey/data/constants';
 import { FeatureFlag } from '@hey/data/feature-flags';
 import { CREATORTOOLS } from '@hey/data/tracking';
-import getPreferences from '@hey/helpers/api/getPreferences';
+import getInternalPreferences from '@hey/helpers/api/getInternalPreferences';
 import { Toggle } from '@hey/ui';
 import { useQuery } from '@tanstack/react-query';
 import axios from 'axios';
@@ -32,8 +32,8 @@ const CreatorTool: FC<CreatorToolProps> = ({ profile }) => {
   ];
 
   const { data: preferences, isLoading } = useQuery({
-    queryFn: () => getPreferences(profile.id, getAuthApiHeaders()),
-    queryKey: ['getPreferences', profile.id || '']
+    queryFn: () => getInternalPreferences(profile.id, getAuthApiHeaders()),
+    queryKey: ['getInternalPreferences', profile.id]
   });
 
   useEffect(() => {
@@ -42,36 +42,38 @@ const CreatorTool: FC<CreatorToolProps> = ({ profile }) => {
     }
   }, [preferences]);
 
-  const updateFeatureFlag = (feature: { id: string; key: string }) => {
+  const updateFeatureFlag = async (feature: { id: string; key: string }) => {
     const { id, key } = feature;
     const enabled = !features.includes(key);
 
     setUpdating(true);
-    toast.promise(
-      axios.post(
-        `${HEY_API_URL}/internal/features/assign`,
-        { enabled, id, profile_id: profile.id },
-        { headers: getAuthApiHeaders() }
-      ),
-      {
-        error: () => {
-          setUpdating(false);
-          return 'Failed to update flag';
-        },
-        loading: 'Updating the flag...',
-        success: () => {
-          Leafwatch.track(CREATORTOOLS.ASSIGN_FEATURE_FLAG, {
-            feature: key,
-            profile_id: profile.id
-          });
-          setUpdating(false);
-          setFeatures((prev) =>
-            enabled ? [...prev, key] : prev.filter((f) => f !== key)
-          );
-          return 'Flag updated';
+    try {
+      await toast.promise(
+        axios.post(
+          `${HEY_API_URL}/internal/features/assign`,
+          { enabled, id, profile_id: profile.id },
+          { headers: getAuthApiHeaders() }
+        ),
+        {
+          error: 'Failed to update flag',
+          loading: 'Updating the flag...',
+          success: 'Flag updated'
         }
-      }
-    );
+      );
+
+      Leafwatch.track(CREATORTOOLS.ASSIGN_FEATURE_FLAG, {
+        feature: key,
+        profile_id: profile.id
+      });
+
+      setFeatures((prev) =>
+        enabled ? [...prev, key] : prev.filter((f) => f !== key)
+      );
+    } catch {
+      // Error handling is managed by toast.promise
+    } finally {
+      setUpdating(false);
+    }
   };
 
   return (

@@ -3,6 +3,7 @@ import type { NextPage } from 'next';
 
 import MetaTags from '@components/Common/MetaTags';
 import NewPost from '@components/Composer/Post/New';
+import Cover from '@components/Shared/Cover';
 import { Leafwatch } from '@helpers/leafwatch';
 import { NoSymbolIcon } from '@heroicons/react/24/outline';
 import {
@@ -11,7 +12,7 @@ import {
   STATIC_IMAGES_URL
 } from '@hey/data/constants';
 import { PAGEVIEW } from '@hey/data/tracking';
-import getProfileFlags from '@hey/helpers/api/getProfileFlags';
+import getProfileDetails from '@hey/helpers/api/getProfileFlags';
 import getProfile from '@hey/helpers/getProfile';
 import { useProfileQuery } from '@hey/lens';
 import { EmptyState, GridItemEight, GridItemFour, GridLayout } from '@hey/ui';
@@ -24,7 +25,6 @@ import Custom500 from 'src/pages/500';
 import { useFeatureFlagsStore } from 'src/store/persisted/useFeatureFlagsStore';
 import { useProfileStore } from 'src/store/persisted/useProfileStore';
 
-import Cover from './Cover';
 import Details from './Details';
 import Feed from './Feed';
 import FeedType from './FeedType';
@@ -80,7 +80,11 @@ const ViewProfile: NextPage = () => {
       : ProfileFeedType.Feed
     : ProfileFeedType.Feed;
 
-  const { data, error, loading } = useProfileQuery({
+  const {
+    data,
+    error,
+    loading: profileLoading
+  } = useProfileQuery({
     skip: id ? !id : !handle,
     variables: {
       request: {
@@ -93,13 +97,13 @@ const ViewProfile: NextPage = () => {
 
   const profile = data?.profile as Profile;
 
-  const { data: profileFlags } = useQuery({
+  const { data: profileDetails, isLoading: profileDetailsLoading } = useQuery({
     enabled: Boolean(profile?.id),
-    queryFn: () => getProfileFlags(profile?.id || ''),
-    queryKey: ['getProfileFlags', id]
+    queryFn: () => getProfileDetails(profile?.id),
+    queryKey: ['getProfileDetailsOnProfile', profile?.id]
   });
 
-  if (!isReady || loading) {
+  if (!isReady || profileLoading) {
     return (
       <ProfilePageShimmer
         profileList={showFollowing || showFollowers || showMutuals}
@@ -115,7 +119,7 @@ const ViewProfile: NextPage = () => {
     return <Custom500 />;
   }
 
-  const isSuspended = staffMode ? false : profileFlags?.isSuspended;
+  const isSuspended = staffMode ? false : profileDetails?.isSuspended;
 
   return (
     <>
@@ -140,7 +144,7 @@ const ViewProfile: NextPage = () => {
             <SuspendedDetails profile={profile as Profile} />
           ) : (
             <Details
-              isSuspended={profileFlags?.isSuspended || false}
+              isSuspended={profileDetails?.isSuspended || false}
               profile={profile as Profile}
             />
           )}
@@ -168,7 +172,7 @@ const ViewProfile: NextPage = () => {
             />
           ) : (
             <>
-              <FeedType feedType={feedType} />
+              <FeedType feedType={feedType as ProfileFeedType} />
               {currentProfile?.id === profile?.id ? <NewPost /> : null}
               {feedType === ProfileFeedType.Feed ||
               feedType === ProfileFeedType.Replies ||
@@ -176,6 +180,10 @@ const ViewProfile: NextPage = () => {
               feedType === ProfileFeedType.Collects ? (
                 <Feed
                   handle={getProfile(profile).slugWithPrefix}
+                  pinnedPublicationId={
+                    profileDetails?.pinnedPublication || null
+                  }
+                  profileDetailsLoading={profileDetailsLoading}
                   profileId={profile.id}
                   type={feedType}
                 />

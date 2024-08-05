@@ -1,6 +1,6 @@
 export enum HomeFeedType {
   FOLLOWING = 'FOLLOWING',
-  HIGHLIGHTS = 'HIGHLIGHTS',
+  FORYOU = 'FORYOU',
   PREMIUM = 'PREMIUM'
 }
 export enum ModFeedType {
@@ -8,9 +8,4 @@ export enum ModFeedType {
   PROFILES = 'PROFILES',
   REPORTS = 'REPORTS',
   SEARCH = 'SEARCH'
-}
-
-export enum OpenAction {
-  RentableBillboard = 'Rentable Billboard',
-  Swap = 'Swap'
 }

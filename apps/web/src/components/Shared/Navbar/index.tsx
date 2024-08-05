@@ -3,12 +3,12 @@ import type { FC } from 'react';
 import NotificationIcon from '@components/Notification/NotificationIcon';
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import { STATIC_IMAGES_URL } from '@hey/data/constants';
+import { H6 } from '@hey/ui';
 import cn from '@hey/ui/cn';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { usePreferencesStore } from 'src/store/non-persisted/usePreferencesStore';
-import { useFeatureFlagsStore } from 'src/store/persisted/useFeatureFlagsStore';
 import { useProfileStore } from 'src/store/persisted/useProfileStore';
 
 import MenuItems from './MenuItems';
@@ -16,11 +16,11 @@ import MessagesIcon from './MessagesIcon';
 import ModIcon from './ModIcon';
 import MoreNavItems from './MoreNavItems';
 import Search from './Search';
+import SiteStatus from './SiteStatus';
 import StaffBar from './StaffBar';
 
 const Navbar: FC = () => {
   const { currentProfile } = useProfileStore();
-  const { staffMode } = useFeatureFlagsStore();
   const { appIcon } = usePreferencesStore();
   const [showSearch, setShowSearch] = useState(false);
 
@@ -34,7 +34,7 @@ const Navbar: FC = () => {
     return (
       <Link
         className={cn(
-          'cursor-pointer rounded-md px-2 py-1 text-left text-sm font-bold tracking-wide md:px-3',
+          'cursor-pointer rounded-md px-2 py-1 text-left tracking-wide md:px-3',
           {
             'bg-gray-200 text-black dark:bg-gray-800 dark:text-white': current,
             'text-gray-700 hover:bg-gray-200 hover:text-black dark:text-gray-300 dark:hover:bg-gray-800 dark:hover:text-white':
@@ -43,7 +43,7 @@ const Navbar: FC = () => {
         )}
         href={url}
       >
-        {name}
+        <H6>{name}</H6>
       </Link>
     );
   };
@@ -66,11 +66,13 @@ const Navbar: FC = () => {
 
   return (
     <header className="divider sticky top-0 z-10 w-full bg-white dark:bg-black">
-      {staffMode ? <StaffBar /> : null}
+      <SiteStatus />
+      <StaffBar />
       <div className="container mx-auto max-w-screen-xl px-5">
         <div className="relative flex h-14 items-center justify-between sm:h-16">
           <div className="flex items-center justify-start">
             <button
+              aria-label="Search"
               className="inline-flex items-center justify-center rounded-md text-gray-500 focus:outline-none md:hidden"
               onClick={() => setShowSearch(!showSearch)}
               type="button"

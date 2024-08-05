@@ -56,7 +56,7 @@ import {
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 import useHandleWrongNetwork from 'src/hooks/useHandleWrongNetwork';
-import { useProfileRestriction } from 'src/store/non-persisted/useProfileRestriction';
+import { useProfileStatus } from 'src/store/non-persisted/useProfileStatus';
 import { useProfileStore } from 'src/store/persisted/useProfileStore';
 import { useSignTypedData, useWriteContract } from 'wagmi';
 import { object, string, union } from 'zod';
@@ -82,7 +82,7 @@ type FormData = z.infer<typeof editProfileSchema>;
 
 const ProfileSettingsForm: FC = () => {
   const { currentProfile } = useProfileStore();
-  const { isSuspended } = useProfileRestriction();
+  const { isSuspended } = useProfileStatus();
   const [isLoading, setIsLoading] = useState(false);
 
   // Cover Picture
@@ -103,9 +103,7 @@ const ProfileSettingsForm: FC = () => {
   const [profilePictureIpfsUrl, setProfilePictureIpfsUrl] = useState(
     currentProfile?.metadata?.picture?.__typename === 'ImageSet'
       ? currentProfile?.metadata?.picture?.raw.uri
-      : currentProfile?.metadata?.picture?.__typename === 'NftImage'
-        ? currentProfile?.metadata?.picture?.image?.raw.uri
-        : ''
+      : ''
   );
   const [profilePictureSrc, setProfilePictureSrc] = useState('');
   const [showProfilePictureCropModal, setShowProfilePictureCropModal] =

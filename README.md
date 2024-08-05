@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="https://github.com/heyxyz/hey/assets/69431456/1f411680-e561-4203-b8a2-d610aa4fe4cb" alt="Hey Logo">
+    <img src="https://github.com/heyxyz/hey/assets/69431456/1f411680-e561-4203-b8a2-d610aa4fe4cb" alt="Hey Banner">
     <h1>Hey</h1>
     <strong>Decentralized, and permissionless social media app 🌿</strong>
 </div>
@@ -43,14 +43,6 @@
 
 Hey is a cutting-edge social media application that leverages the power of [Lens Protocol](https://lens.xyz) 🌿 to create a decentralized and permissionless platform for users to interact, share, and engage with one another. With a focus on privacy, security, and user control, Hey aims to revolutionize the social media landscape by providing a more transparent and equitable digital environment for its users.
 
-## 📦 Environments
-
-| Name    | Link                    |
-| ------- | ----------------------- |
-| Mainnet | https://hey.xyz         |
-| Testnet | https://testnet.hey.xyz |
-| Staging | https://staging.hey.xyz |
-
 ## ✅ Community
 
 For a place to have open discussions on features, voice your ideas, or get help with general questions please visit our community at [Discord](https://hey.xyz/discord).
@@ -66,6 +58,10 @@ We love contributors! Feel free to contribute to this project but please read th
 <a href="https://github.com/heyxyz/hey/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=heyxyz/hey" />
 </a>
+
+## 🧪 Testing
+
+This project is tested with BrowserStack
 
 ## ⚖️ License
 

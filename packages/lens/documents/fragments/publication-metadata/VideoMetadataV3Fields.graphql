@@ -1,6 +1,6 @@
 fragment VideoMetadataV3Fields on VideoMetadataV3 {
   id
-  rawURI
+  content
   tags
   attributes {
     ...MetadataAttributeFields
@@ -11,10 +11,4 @@ fragment VideoMetadataV3Fields on VideoMetadataV3 {
   attachments {
     ...PublicationMetadataMediaFields
   }
-  title
-  content
-  encryptedWith {
-    ...PublicationMetadataLitEncryptionFields
-  }
-  appId
 }
